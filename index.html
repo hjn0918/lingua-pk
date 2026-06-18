@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>LinguaPK – Jiani & Léo</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#6C63FF;--pl:#8B85FF;--s:#FF6584;
+  --ok:#22C55E;--warn:#F7B731;--err:#EF4444;
+  --gold:#FFD700;--bg:#F0F0F5;--card:#FFF;--text:#1A1A2E;
+  --muted:#6B7280;--border:#E5E7EB;--r:14px;--rs:10px;
+  --sh:0 2px 12px rgba(0,0,0,.06);--shlg:0 8px 30px rgba(0,0,0,.12)
+}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.app{display:flex;flex-direction:column;min-height:100vh}
+
+/* SCREENS */
+.screen{display:none;flex:1}.screen.active{display:flex;flex-direction:column}
+
+/* HOME */
+#screen-home{background:linear-gradient(160deg,#6C63FF,#FF6584);align-items:center;justify-content:center;text-align:center;padding:40px 20px;color:#fff}
+.home-inner{max-width:480px;width:100%}
+.hero-logo{font-size:3.2rem;display:block;margin-bottom:8px}
+.hero h1{font-size:2rem;font-weight:900;margin-bottom:6px;line-height:1.2}
+.hero p{font-size:1rem;opacity:.85;margin-bottom:32px;line-height:1.5}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.profile-card{
+  background:rgba(255,255,255,.15);backdrop-filter:blur(10px);
+  border-radius:var(--r);padding:20px 16px;cursor:pointer;
+  border:3px solid transparent;transition:all .25s;position:relative
+}
+.profile-card:hover{background:rgba(255,255,255,.25);transform:translateY(-2px)}
+.profile-card.selected{border-color:#fff;background:rgba(255,255,255,.3)}
+.profile-card .checkmark{
+  position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;
+  background:#fff;color:var(--p);display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:900;opacity:0;transform:scale(.5);transition:all .2s
+}
+.profile-card.selected .checkmark{opacity:1;transform:scale(1)}
+.avatar-lg{width:80px;height:80px;border-radius:50%;overflow:hidden;margin:0 auto 10px;border:3px solid rgba(255,255,255,.4)}
+.avatar-lg svg{width:100%;height:100%}
+.profile-card h3{font-size:1.1rem;font-weight:800;margin-bottom:6px}
+.learning-flag{font-size:.85rem;opacity:.9;margin-bottom:2px}
+.native-text{font-size:.75rem;opacity:.65}
+
+/* BUTTONS */
+.btn{padding:14px 32px;border-radius:28px;border:none;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:#fff;color:var(--p);box-shadow:var(--shlg)}.btn-primary:hover{transform:translateY(-2px)}
+.btn-lg{padding:16px 40px;font-size:1.1rem}.btn-sm{padding:8px 18px;font-size:.85rem}
+.btn-secondary{background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.3)}
+
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px}
+.feature-item{background:rgba(255,255,255,.1);border-radius:var(--rs);padding:14px 10px}
+.feature-item .icon{font-size:1.5rem;margin-bottom:6px}.feature-item h4{font-size:.85rem;font-weight:700;margin-bottom:4px}
+.feature-item p{font-size:.72rem;opacity:.75;line-height:1.3}
+
+/* MENU */
+#screen-menu{background:var(--bg);align-items:center}
+.menu-container{width:100%;max-width:640px;padding:0 16px 100px}
+.menu-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-top:16px}
+.menu-welcome h2{font-size:1.3rem;font-weight:800}.menu-welcome p{font-size:.82rem;color:var(--muted)}
+.nav-avatar-sm{width:40px;height:40px;border-radius:50%;overflow:hidden;cursor:pointer;border:2px solid var(--p)}
+.nav-avatar-sm svg{width:100%;height:100%}
+
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.stat-card{background:var(--card);border-radius:var(--rs);padding:12px 8px;text-align:center;box-shadow:var(--sh)}
+.stat-value{font-size:1.2rem;font-weight:900;color:var(--p)}.stat-label{font-size:.68rem;color:var(--muted);margin-top:2px}
+
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.menu-card{
+  background:var(--card);border-radius:var(--r);padding:20px 16px;
+  box-shadow:var(--sh);cursor:pointer;transition:all .2s;border:2px solid transparent;
+  position:relative;overflow:hidden
+}
+.menu-card:hover{transform:translateY(-3px);box-shadow:var(--shlg)}
+.menu-card.pk{border-color:#FFE5E5}
+.badge{position:absolute;top:10px;right:10px;font-size:.68rem;padding:3px 8px;border-radius:20px;font-weight:700}
+.badge-hot{background:#FFE5E5;color:var(--err)}.badge-new{background:#E5FFE8;color:#22B64D}
+.card-icon{font-size:2rem;margin-bottom:8px}
+.menu-card h3{font-size:1rem;font-weight:800;margin-bottom:4px}
+.menu-card p{font-size:.78rem;color:var(--muted);line-height:1.4}
+
+/* NAVBAR */
+.navbar{background:var(--card);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;padding:10px 16px;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.navbar-brand{font-size:1.1rem;font-weight:900;background:linear-gradient(135deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;cursor:pointer}
+.nav-user{display:flex;align-items:center;gap:10px}
+.lang-badge{font-size:.75rem;padding:3px 10px;border-radius:20px;font-weight:700}
+.lang-badge.fr{background:#E5F0FF;color:#0066CC}.lang-badge.zh{background:#FFE5E5;color:#CC0000}
+.nav-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:transparent;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--muted)}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;padding:8px 0 env(safe-area-inset-bottom,8px);z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.06)}
+.bottom-nav.hidden{display:none}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:5px;cursor:pointer;border:none;background:transparent;transition:all .2s;color:var(--muted);font-size:.68rem;font-weight:600}
+.nav-item .nav-icon{font-size:1.3rem;margin-bottom:2px;transition:transform .2s}
+.nav-item.active{color:var(--p)}.nav-item.active .nav-icon{transform:scale(1.2)}
+
+/* ===== PK BATTLE SCREEN ===== */
+#screen-pk{padding:0;background:linear-gradient(160deg,#1a1535,#2d2060);min-height:100vh;color:#fff}
+.pk-start-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.pk-start-title{font-size:1.6rem;font-weight:900;margin-bottom:8px}
+.pk-start-sub{color:rgba(255,255,255,.6);font-size:.9rem;margin-bottom:36px}
+.pk-vs-display{display:flex;align-items:center;gap:24px;margin-bottom:36px}
+.pk-vs-player{display:flex;flex-direction:column;align-items:center;gap:8px}
+.pk-vs-player .avatar-wrap{width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid rgba(255,255,255,.2)}
+.pk-vs-player .avatar-wrap svg{width:100%;height:100%}
+.pk-name{color:#fff;font-weight:700;font-size:.95rem}
+.pk-lang{font-size:.78rem;color:rgba(255,255,255,.5)}
+.pk-vs-text{font-size:1.8rem;font-weight:900;color:rgba(255,255,255,.3)}
+.btn-pk{padding:14px 48px;border-radius:28px;border:none;font-size:1.05rem;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--p),var(--s));color:#fff;transition:all .25s}
+.btn-pk:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,99,255,.4)}
+
+/* PK COUNTDOWN */
+.pk-countdown-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ready-text{color:rgba(255,255,255,.7);font-size:1.1rem;margin-bottom:16px}
+.turn-indicator{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.turn-indicator .avatar-wrap{width:36px;height:36px;border-radius:50%;overflow:hidden}
+.turn-indicator .turn-name{color:#fff;font-weight:700;font-size:1rem}
+.pk-countdown-num{font-size:5rem;font-weight:900;color:#fff;animation:cdpulse 1s infinite}
+@keyframes cdpulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+
+/* PK BATTLE (active) */
+.pk-battle-screen{flex:1;display:none;flex-direction:column;padding:16px 16px 120px;max-width:500px;margin:0 auto;width:100%}
+.pk-battle-screen.active{display:flex}
+.pk-score-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.pk-player-info{display:flex;align-items:center;gap:8px}
+.pk-player-info .avatar-wrap{width:36px;height:36px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.3)}
+.pk-player-info .avatar-wrap svg{width:100%;height:100%}
+.pk-player-info span{font-size:.85rem;font-weight:700}
+.pk-turn-label{font-size:.7rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em}
+.pk-progress-dots{display:flex;gap:6px}
+.pk-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .3s}
+.pk-dot.dot-done{background:var(--ok)}.pk-dot-current{background:var(--warn);animation:dotpulse .8s infinite}
+@keyframes dotpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+
+.question-area{text-align:center;margin-bottom:20px}
+.question-word{font-size:2.2rem;font-weight:900;margin-bottom:4px;letter-spacing:-.02em}
+.question-phonetic{font-size:.95rem;color:rgba(255,255,255,.55);margin-bottom:4px}
+.question-hint{font-size:.82rem;color:rgba(255,255,255,.45)}
+.timer-ring{position:relative;width:64px;height:64px;margin:0 auto 20px}
+.timer-ring svg{width:64px;height:64px;transform:rotate(-90deg)}
+.timer-ring circle{fill:none;stroke-width:5}
+.timer-ring .timer-bg{stroke:rgba(255,255,255,.15)}
+.timer-ring .timer-fg{stroke:var(--warn);stroke-linecap:round;transition:stroke-dashoffset .1s linear}
+.timer-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.2rem;font-weight:900}
+.answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.answer-btn{
+  padding:14px 12px;border-radius:var(--rs);border:2px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.07);color:#fff;font-size:.92rem;font-weight:600;
+  cursor:pointer;transition:all .15s;text-align:center
+}
+.answer-btn:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.35)}
+.answer-btn.correct{background:var(--ok);border-color:var(--ok);color:#fff}
+.answer-btn.wrong{background:var(--err);border-color:var(--err);color:#fff}
+
+/* PASS OVERLAY */
+.pass-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.88);z-index:250;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px}
+.pass-overlay.show{display:flex}
+.pass-overlay .pass-avatar{width:80px;height:80px;border-radius:50%;overflow:hidden;margin-bottom:20px}
+.pass-overlay .pass-avatar svg{width:100%;height:100%}
+.pass-title{color:#fff;font-size:1.5rem;font-weight:900;margin-bottom:10px}
+.pass-sub{color:rgba(255,255,255,.6);font-size:1rem;margin-bottom:28px}
+.pass-btn{padding:14px 40px;border-radius:28px;border:none;font-size:1.05rem;font-weight:800;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--p),var(--pl))}
+
+/* RESULT */
+#screen-result{padding:40px 20px 80px;align-items:center;justify-content:center;background:linear-gradient(160deg,#F5F4FF,#EEF0FF)}
+.result-card{background:var(--card);border-radius:24px;padding:36px 28px;max-width:480px;width:100%;text-align:center;box-shadow:var(--shlg)}
+.result-emoji{font-size:3.5rem;margin-bottom:12px;animation:tada .6s}
+@keyframes tada{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+.result-title{font-size:1.6rem;font-weight:900;margin-bottom:6px}
+.result-subtitle{color:var(--muted);margin-bottom:24px;font-size:.9rem}
+.result-scores{display:flex;gap:14px;margin-bottom:24px}
+.result-player{flex:1;background:var(--bg);border-radius:var(--r);padding:14px}
+.result-player .avatar-wrap{width:44px;height:44px;border-radius:50%;overflow:hidden;margin:0 auto 6px}
+.result-player .avatar-wrap svg{width:100%;height:100%}
+.result-player-name{font-size:.8rem;color:var(--muted);margin-bottom:4px}
+.result-player-score{font-size:1.8rem;font-weight:900;color:var(--p)}
+.result-player.winner{background:linear-gradient(135deg,#FFF8E1,#FFF3CD)}
+.result-player.winner .result-player-score{color:var(--gold)}
+.result-actions{display:flex;flex-direction:column;gap:10px;margin-top:24px}
+
+/* PRACTICE/FLASHCARD */
+#screen-practice{background:var(--bg);align-items:center}
+.practice-container{width:100%;max-width:520px;padding:16px 16px 100px}
+.practice-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-top:8px}
+.practice-counter{font-size:.82rem;color:var(--muted);font-weight:600}
+.flashcard-wrap{perspective:1000px;width:100%;min-height:280px;margin-bottom:16px}
+.flashcard{
+  width:100%;min-height:260px;border-radius:var(--r);
+  background:var(--card);box-shadow:var(--shlg);cursor:pointer;
+  transition:transform .5s;transform-style:preserve-3d;position:relative
+}
+.flashcard.flipped{transform:rotateY(180deg)}
+.fc-front,.fc-back{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  border-radius:var(--r);backface-visibility:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 20px;text-align:center
+}
+.fc-back{transform:rotateY(180deg);background:linear-gradient(135deg,#6C63FF,#8B85FF);color:#fff}
+.fc-word{font-size:2rem;font-weight:900;margin-bottom:6px}
+.fc-phonetic{font-size:1.1rem;color:var(--muted);margin-bottom:8px}
+.fc-meaning{font-size:1.1rem;color:var(--p);font-weight:700}
+.fc-example{font-size:.88rem;color:var(--muted);margin-top:10px;line-height:1.5}
+.fc-back .fc-word{color:#fff}
+.fc-back .fc-meaning{color:rgba(255,255,255,.85)}
+.fc-back .fc-example{color:rgba(255,255,255,.65)}
+.fc-flip-hint{font-size:.75rem;color:var(--muted);margin-top:12px}
+.speak-btn{width:52px;height:52px;border-radius:50%;border:none;background:var(--p);color:#fff;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:10px 0;transition:transform .15s}
+.speak-btn:hover{transform:scale(1.1)}
+.rating-bar{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.rate-btn{padding:8px 18px;border-radius:20px;border:2px solid var(--border);background:var(--card);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s}
+.rate-btn:hover{transform:translateY(-1px)}
+.rate-btn.again{border-color:#FFD6D6;color:var(--err)}
+.rate-btn.hard{border-color:#FFE4B5;color:var(--warn)}
+.rate-btn.good{border-color:#D4EDDA;color:var(--ok)}
+.rate-btn.easy{border-color:#D1ECF1;color:#17A2B8}
+.progress-bar-wrap{width:100%;height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:12px}
+.progress-bar-fill{height:100%;border-radius:4px;transition:width .4s ease;background:linear-gradient(90deg,var(--p),var(--pl))}
+
+/* VOCAB */
+#screen-vocab{background:var(--bg);align-items:center}
+.vocab-container{width:100%;max-width:640px;padding:16px 16px 100px}
+.vocab-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-top:8px}
+.vocab-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.vtab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;color:var(--muted)}
+.vtab.active{background:var(--p);color:#fff;border-color:var(--p)}
+.word-card{background:var(--card);border-radius:var(--rs);padding:16px;margin-bottom:10px;box-shadow:var(--sh);display:flex;align-items:center;gap:14px;transition:transform .15s}
+.word-card:hover{transform:translateX(4px)}
+.word-icon{font-size:1.4rem;width:36px;text-align:center}
+.word-main{flex:1}
+.word-target{font-size:1.05rem;font-weight:800}
+.word-ph{font-size:.8rem;color:var(--muted)}
+.word-en{font-size:.85rem;color:var(--p);font-weight:600}
+.word-ex{font-size:.76rem;color:var(--muted);margin-top:3px}
+.word-speak{width:38px;height:38px;border-radius:50%;border:none;background:var(--bg);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.word-speak:hover{background:var(--border)}
+
+/* PHRASE */
+#screen-phrase{background:var(--bg);align-items:center}
+.phrase-container{width:100%;max-width:680px;padding:16px 16px 100px}
+.phrase-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-top:8px}
+.phrase-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.ptab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;color:var(--muted)}
+.ptab.active{background:var(--p);color:#fff;border-color:var(--p)}
+.phrase-row{background:var(--card);border-radius:var(--rs);padding:14px 16px;margin-bottom:8px;box-shadow:var(--sh)}
+.phrase-target{font-size:1rem;font-weight:800;margin-bottom:2px}
+.phrase-ph{font-size:.8rem;color:var(--muted);margin-bottom:4px}
+.phrase-en{font-size:.88rem;color:var(--p);font-weight:600}
+.phrase-actions{display:flex;gap:8px;margin-top:8px}
+.pron-btn{padding:5px 12px;border-radius:16px;border:1.5px solid var(--border);background:var(--bg);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s}
+.pron-btn:hover{border-color:var(--p);color:var(--p)}
+
+/* PRONUNCIATION MODAL */
+.pron-modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:300;align-items:center;justify-content:center;padding:20px}
+.pron-modal-overlay.show{display:flex}
+.pron-modal{background:var(--card);border-radius:var(--r);padding:32px 28px;max-width:420px;width:100%;text-align:center;position:relative}
+.pron-close{position:absolute;top:10px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1}
+.pron-target{font-size:1.6rem;font-weight:900;margin-bottom:4px}
+.pron-phonetic{font-size:.95rem;color:var(--muted);margin-bottom:4px}
+.pron-english{font-size:.9rem;color:var(--p);margin-bottom:20px}
+.pron-step{font-size:.82rem;color:var(--muted);margin-bottom:12px;font-weight:600}
+.pron-step.active{color:var(--p)}
+.pron-record-btn{width:72px;height:72px;border-radius:50%;border:3px solid var(--p);background:var(--p);color:#fff;font-size:1.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:16px auto;transition:all .2s}
+.pron-record-btn.recording{background:var(--err);border-color:var(--err);animation:recpulse 1s infinite}
+@keyframes recpulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 16px rgba(239,68,68,0)}}
+.pron-result{margin-top:16px;padding:16px;border-radius:var(--rs);display:none}
+.pron-result.show{display:block}
+.pron-result.good{background:#D4EDDA;color:#155724}.pron-result.meh{background:#FFF3CD;color:#856404}.pron-result.try{background:#F8D7DA;color:#721C24}
+.pron-score{font-size:2.5rem;font-weight:900;margin-bottom:4px}
+.pron-result-label{font-size:.85rem;font-weight:700;margin-bottom:8px}
+.pron-heard{font-size:.8rem;color:var(--muted);margin-top:8px;padding:8px;background:var(--bg);border-radius:var(--rs)}
+
+/* PROGRESS */
+#screen-progress{background:var(--bg);align-items:center;padding:20px 16px 100px}
+.progress-container{width:100%;max-width:640px}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.progress-top h2{font-size:1.3rem;font-weight:800}
+.cat-item{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:var(--rs);padding:12px 16px;border:1px solid var(--border);margin-bottom:8px}
+.cat-icon{font-size:1.2rem;width:30px}
+.cat-info{flex:1}
+.cat-name{font-size:.88rem;font-weight:600;margin-bottom:4px}
+.cat-bar-bg{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.cat-bar-fill{height:100%;border-radius:3px;transition:width .8s;background:linear-gradient(90deg,var(--p),var(--ok))}
+.cat-pct{font-size:.78rem;font-weight:700;color:var(--p);min-width:34px;text-align:right}
+.achievements-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:20px}
+.achievement{background:var(--card);border-radius:var(--rs);padding:14px;text-align:center;border:2px solid var(--border)}
+.achievement .ach-icon{font-size:1.8rem;margin-bottom:6px}
+.achievement .ach-name{font-size:.78rem;font-weight:700;margin-bottom:2px}
+.achievement .ach-desc{font-size:.68rem;color:var(--muted)}
+.achievement.locked{opacity:.4;filter:grayscale(1)}
+.achievement.unlocked{border-color:var(--gold);background:linear-gradient(135deg,#FFF8E1,#FFF)}
+
+/* TOAST */
+.toast-container{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:400;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--text);color:#fff;padding:10px 20px;border-radius:24px;font-size:.88rem;font-weight:600;animation:toastIn .3s,toastOut .3s 2.2s forwards;white-space:nowrap}
+.toast.success{background:var(--ok)}.toast.error{background:var(--err)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(-10px)}}
+
+/* SCORE POPUP */
+.score-popup{position:fixed;pointer-events:none;z-index:350;font-size:1.6rem;font-weight:900;animation:scoreFloat 1.2s forwards}
+@keyframes scoreFloat{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
+
+@media(max-width:600px){
+  .features-grid{grid-template-columns:1fr 1fr}.menu-grid{grid-template-columns:1fr}
+  .stats-bar{grid-template-columns:1fr 1fr}.profile-grid{gap:12px}.hero h1{font-size:1.6rem}
+  .question-word{font-size:1.8rem}.answer-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar" style="display:none">
+  <div class="navbar-brand" onclick="goHome()">🥊 LinguaPK</div>
+  <div class="nav-user">
+    <span class="lang-badge" id="nav-lang-badge"></span>
+    <div class="nav-avatar-sm" id="nav-avatar" onclick="showScreen('progress')"></div>
+    <button class="nav-btn" onclick="logout()">Switch</button>
+  </div>
+</nav>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ========== HOME ========== -->
+<div class="screen active" id="screen-home">
+  <div class="home-inner">
+    <div class="hero"><span class="hero-logo">🥊</span><h1>LinguaPK</h1><p>Learn a new language together.<br>Pick your profile to start!</p></div>
+    <div class="profile-grid">
+      <div class="profile-card jiani" id="profile-jiani" onclick="selectProfile('jiani')">
+        <div class="checkmark">✓</div><div class="avatar-lg" id="home-avatar-jiani"></div>
+        <h3>Jiani</h3>
+        <div class="learning-flag">🇫🇷 I'm learning French</div>
+        <div class="native-text">I speak Chinese 🇨🇳</div>
+      </div>
+      <div class="profile-card leo" id="profile-leo" onclick="selectProfile('leo')">
+        <div class="checkmark">✓</div><div class="avatar-lg" id="home-avatar-leo"></div>
+        <h3>Léo</h3>
+        <div class="learning-flag">🇨🇳 I'm learning Chinese</div>
+        <div class="native-text">Je parle français 🇫🇷</div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="startApp()">🚀 Start Learning!</button>
+    <div class="features-grid">
+      <div class="feature-item"><div class="icon">⚔️</div><h4>PK Battle</h4><p>Jiani vs Léo — quiz rounds!</p></div>
+      <div class="feature-item"><div class="icon">🎤</div><h4>Pronunciation</h4><p>Listen & record your speaking</p></div>
+      <div class="feature-item"><div class="icon">📚</div><h4>Rich Content</h4><p>100+ words & phrases</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MENU ========== -->
+<div class="screen" id="screen-menu">
+  <div class="menu-container">
+    <div class="menu-header">
+      <div class="menu-welcome"><h2 id="menu-welcome-text">Welcome! 👋</h2><p id="menu-learning-text">Learning French</p></div>
+      <div class="nav-avatar-sm" id="menu-avatar"></div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-value" id="stat-streak">0🔥</div><div class="stat-label">Day Streak</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-total-score">0</div><div class="stat-label">Points</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-words">0</div><div class="stat-label">Words</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-wins">0</div><div class="stat-label">Wins</div></div>
+    </div>
+    <div class="menu-grid">
+      <div class="menu-card pk" onclick="startPK()"><div class="badge badge-hot">🔥 HOT</div><div class="card-icon">⚔️</div><h3>PK Battle</h3><p>Jiani vs Léo! Take turns.</p></div>
+      <div class="menu-card" onclick="showScreen('practice')"><div class="card-icon">🃏</div><h3>Flashcards</h3><p>Flip & learn vocabulary.</p></div>
+      <div class="menu-card" onclick="showScreen('vocab')"><div class="card-icon">📖</div><h3>Vocabulary</h3><p>Browse words by category.</p></div>
+      <div class="menu-card" onclick="showScreen('phrase')"><div class="card-icon">💬</div><h3>Phrase Book</h3><p>Survival phrases + 🎤</p></div>
+    </div>
+    <div style="margin-top:14px">
+      <div class="menu-card" style="border-color:#B3C9FF" onclick="showScreen('progress')"><div class="card-icon">📊</div><h3>My Progress</h3><p>Track achievements.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== PK BATTLE ========== -->
+<div class="screen" id="screen-pk">
+  <!-- START -->
+  <div class="pk-start-screen" id="pk-start-view">
+    <div class="pk-start-title">⚔️ PK Battle</div>
+    <div class="pk-start-sub">Jiani vs Léo — 10 rounds, alternating turns</div>
+    <div class="pk-vs-display">
+      <div class="pk-vs-player">
+        <div class="avatar-wrap" id="pk-sa-jiani"></div><div class="pk-name">Jiani</div><div class="pk-lang">🇫🇷 French</div>
+      </div>
+      <div class="pk-vs-text">VS</div>
+      <div class="pk-vs-player">
+        <div class="avatar-wrap" id="pk-sa-leo"></div><div class="pk-name">Léo</div><div class="pk-lang">🇨🇳 Chinese</div>
+      </div>
+    </div>
+    <button class="btn-pk" onclick="pkBegin()">▶ Start Battle!</button>
+  </div>
+  <!-- COUNTDOWN -->
+  <div class="pk-countdown-screen" id="pk-cd-view" style="display:none">
+    <div class="ready-text" id="cd-ready">Get ready!</div>
+    <div class="turn-indicator" id="cd-turn"></div>
+    <div class="pk-countdown-num" id="cd-num">3</div>
+  </div>
+  <!-- ACTIVE -->
+  <div class="pk-battle-screen" id="pk-active-view">
+    <div class="pk-score-bar">
+      <div class="pk-player-info"><div class="avatar-wrap" id="pk-a-jiani"></div><span>Jiani</span><span class="pk-score-val" id="pk-s-jiani">0</span></div>
+      <div class="pk-turn-label" id="pk-turn-lbl">JIANI'S TURN</div>
+      <div class="pk-player-info"><span id="pk-s-leo">0</span><div class="avatar-wrap" id="pk-a-leo"></div><span>Léo</span></div>
+    </div>
+    <div class="pk-progress-dots" id="pk-dots"></div>
+    <div class="question-area">
+      <div class="question-word" id="q-word"></div>
+      <div class="question-phonetic" id="q-ph"></div>
+      <div class="question-hint" id="q-hint"></div>
+    </div>
+    <div class="timer-ring" id="q-timer-ring">
+      <svg viewBox="0 0 64 64"><circle class="timer-bg" cx="32" cy="32" r="29"/><circle class="timer-fg" cx="32" cy="32" r="29" stroke-dasharray="182.2" stroke-dashoffset="0" id="timer-svg"/></svg>
+      <div class="timer-text" id="q-time">15</div>
+    </div>
+    <div class="answer-grid" id="q-answers"></div>
+  </div>
+</div>
+
+<!-- ========== RESULT ========== -->
+<div class="screen" id="screen-result">
+  <div class="result-card">
+    <div class="result-emoji" id="res-emoji">🏆</div>
+    <div class="result-title" id="res-title">Battle Complete!</div>
+    <div class="result-subtitle" id="res-sub"></div>
+    <div class="result-scores" id="res-scores"></div>
+    <div class="result-actions">
+      <button class="btn btn-primary" onclick="startPK()">🔄 Rematch</button>
+      <button class="btn btn-secondary" onclick="showScreen('menu')" style="background:var(--bg);color:var(--text)">🏠 Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FLASHCARD / PRACTICE ========== -->
+<div class="screen" id="screen-practice">
+  <div class="practice-container">
+    <div class="practice-header">
+      <h2>🃏 Flashcards</h2>
+      <div class="practice-counter" id="fc-counter">1 / 0</div>
+    </div>
+    <div class="flashcard-wrap" id="fc-wrap">
+      <div class="flashcard" id="fc-card" onclick="flipCard()">
+        <div class="fc-front" id="fc-front">
+          <div class="fc-word" id="fc-word">—</div>
+          <div class="fc-phonetic" id="fc-ph">—</div>
+          <button class="speak-btn" onclick="event.stopPropagation();speakText(document.getElementById('fc-word').textContent)" title="Listen">🔊</button>
+          <div class="fc-flip-hint">Tap to flip →</div>
+        </div>
+        <div class="fc-back" id="fc-back">
+          <div class="fc-word" id="fc-b-word">—</div>
+          <div class="fc-meaning" id="fc-b-mean">—</div>
+          <div class="fc-example" id="fc-b-ex">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="rating-bar" id="fc-rating">
+      <button class="rate-btn again" onclick="rateCard('again')">Again</button>
+      <button class="rate-btn hard" onclick="rateCard('hard')">Hard</button>
+      <button class="rate-btn good" onclick="rateCard('good')">Good</button>
+      <button class="rate-btn easy" onclick="rateCard('easy')">Easy</button>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="fc-progress" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- ========== VOCAB ========== -->
+<div class="screen" id="screen-vocab">
+  <div class="vocab-container">
+    <div class="vocab-top"><h2>📖 Vocabulary</h2></div>
+    <div class="vocab-tabs" id="v-tabs"></div>
+    <div id="v-list"></div>
+  </div>
+</div>
+
+<!-- ========== PHRASE ========== -->
+<div class="screen" id="screen-phrase">
+  <div class="phrase-container">
+    <div class="phrase-top"><h2>💬 Phrase Book</h2></div>
+    <div class="phrase-tabs" id="phr-tabs"></div>
+    <div id="phr-list"></div>
+  </div>
+</div>
+
+<!-- ========== PROGRESS ========== -->
+<div class="screen" id="screen-progress">
+  <div class="progress-container">
+    <div class="progress-top"><h2>📊 Our Progress</h2></div>
+    <div id="prog-overall" style="display:flex;align-items:center;padding:12px 16px;background:linear-gradient(135deg,#E8F0FE,#F0F4FF);border-radius:12px;margin-bottom:8px;font-size:.92rem"></div>
+    <div id="prog-daily" style="display:flex;align-items:center;padding:12px 16px;background:linear-gradient(135deg,#FFF0F0,#FFF5F5);border-radius:12px;margin-bottom:16px;font-size:.92rem"></div>
+    <div id="prog-categories"></div>
+    <h3 style="font-size:.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:24px;margin-bottom:10px">Achievements</h3>
+    <div class="achievements-grid" id="prog-achs"></div>
+  </div>
+</div>
+
+<!-- ========== PASS OVERLAY ========== -->
+<div class="pass-overlay" id="pass-overlay">
+  <div class="pass-avatar" id="pass-av"></div>
+  <div class="pass-title" id="pass-tit">Pass to Jiani</div>
+  <div class="pass-sub" id="pass-sub">It's your turn!</div>
+  <button class="pass-btn" onclick="dismissPassOverlay()">I'm Ready! 👋</button>
+</div>
+
+<!-- ========== PRON MODAL ========== -->
+<div class="pron-modal-overlay" id="pron-overlay">
+  <div class="pron-modal">
+    <button class="pron-close" onclick="closePronModal()">✕</button>
+    <h3 style="margin-bottom:16px">🎤 Pronunciation Practice</h3>
+    <div class="pron-target" id="pron-target">—</div>
+    <div class="pron-phonetic" id="pron-ph">—</div>
+    <div class="pron-english" id="pron-en">—</div>
+    <div class="pron-step" id="pron-step1">Step 1: Listen to the phrase</div>
+    <button class="btn btn-primary" id="pron-play-btn" onclick="playPronPhrase()">🔊 Play</button>
+    <div class="pron-step" id="pron-step2" style="margin-top:16px;opacity:.4">Step 2: Record yourself</div>
+    <button class="pron-record-btn" id="pron-rec-btn" onclick="toggleRecord()">🎤</button>
+    <div class="pron-result" id="pron-res">
+      <div class="pron-score" id="pron-score">—%</div>
+      <div class="pron-result-label" id="pron-rlabel">Result</div>
+      <div class="pron-heard" id="pron-heard">Heard: —</div>
+    </div>
+    <button class="btn btn-primary" id="pron-retry-btn" style="margin-top:16px;display:none" onclick="retryPron()">🔄 Try Again</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav hidden" id="bottom-nav">
+  <button class="nav-item active" id="nav-menu" onclick="showScreen('menu')"><span class="nav-icon">🏠</span>Home</button>
+  <button class="nav-item" id="nav-practice" onclick="showScreen('practice')"><span class="nav-icon">🃏</span>Cards</button>
+  <button class="nav-item" id="nav-vocab" onclick="showScreen('vocab')"><span class="nav-icon">📖</span>Vocab</button>
+  <button class="nav-item" id="nav-progress" onclick="showScreen('progress')"><span class="nav-icon">📊</span>Progress</button>
+</div>
+
+<div id="spc"></div><!-- score popup container -->
+
+</div><!-- end app -->
+
+<script>
+// ==================== AVATARS ====================
+const AVATAR_J = `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#FFE5E5"/><circle cx="50" cy="38" r="20" fill="#D4A07A"/><path d="M30 30 Q50 0 70 30 Q85 50 50 65 Q15 50 30 30Z" fill="#1A1A2E"/><circle cx="43" cy="42" r="2.5" fill="#1A1A2E"/><circle cx="57" cy="42" r="2.5" fill="#1A1A2E"/><path d="M45 50 Q50 55 55 50" stroke="#1A1A2E" stroke-width="2" fill="none"/><circle cx="50" cy="68" r="18" fill="#E84040"/><text x="50" y="76" text-anchor="middle" fill="#fff" font-size="20" font-weight="900" font-family="sans-serif">J</text></svg>`;
+const AVATAR_L = `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#E5F0FF"/><circle cx="50" cy="38" r="20" fill="#C8A882"/><rect x="28" y="18" width="44" height="24" rx="12" fill="#0066CC"/><circle cx="43" cy="42" r="2.5" fill="#1A1A2E"/><circle cx="57" cy="42" r="2.5" fill="#1A1A2E"/><path d="M45 50 Q50 55 55 50" stroke="#1A1A2E" stroke-width="2" fill="none"/><circle cx="50" cy="68" r="18" fill="#0066CC"/><text x="50" y="76" text-anchor="middle" fill="#fff" font-size="20" font-weight="900" font-family="sans-serif">L</text></svg>`;
+
+// ==================== PROFILES ====================
+const PROFILES = {
+  jiani:{name:'Jiani',learnsLang:'fr',nativeLang:'zh',color:'#E84040',avatar:AVATAR_J},
+  leo:{name:'Léo',learnsLang:'zh',nativeLang:'fr',color:'#0066CC',avatar:AVATAR_L}
+};
+
+// ==================== DATA ====================
+const DATA = {
+  fr:{
+    langName:'French',flag:'🇫🇷',level:'DELF A1-A2',speechLang:'fr-FR',
+    categories:{
+      greetings:{name:'👋 Greetings',icon:'👋',words:[
+        {t:'Bonjour',ph:'/bɔ̃.ʒuʁ/',e:'Hello',ex:'Bonjour, comment allez-vous?'},
+        {t:'Salut',ph:'/sa.ly/',e:'Hi',ex:'Salut, ça va?'},
+        {t:'Au revoir',ph:'/o ʁə.vwaʁ/',e:'Goodbye',ex:'Au revoir, à demain!'},
+        {t:"S'il vous plaît",ph:'/s‿il vu plɛ/',e:'Please',ex:'Un café, s\'il vous plaît.'},
+        {t:'Merci',ph:'/mɛʁ.si/',e:'Thank you',ex:'Merci beaucoup!'},
+        {t:'Oui',ph:'/wi/',e:'Yes',ex:'Oui, je suis d\'accord.'},
+        {t:'Non',ph:'/nɔ̃/',e:'No',ex:'Non, merci.'},
+        {t:'Comment ça va?',ph:'/kɔ.mɑ̃ sa va/',e:'How are you?',ex:'Comment ça va aujourd\'hui?'}
+      ]},
+      numbers:{name:'🔢 Numbers',icon:'🔢',words:[
+        {t:'Un',ph:'/œ̃/',e:'One',ex:'J\'ai un chat.'},{t:'Deux',ph:'/dø/',e:'Two',ex:'Deux chats.'},
+        {t:'Trois',ph:'/tʁwa/',e:'Three',ex:'Trois amis.'},{t:'Quatre',ph:'/katʁ/',e:'Four',ex:'Quatre pommes.'},
+        {t:'Cinq',ph:'/sɛ̃/',e:'Five',ex:'Cinq minutes.'},{t:'Dix',ph:'/dis/',e:'Ten',ex:'Il est dix heures.'},
+        {t:'Vingt',ph:'/vɛ̃/',e:'Twenty',ex:'J\'ai vingt ans.'},{t:'Cent',ph:'/sɑ̃/',e:'Hundred',ex:'Cent euros.'},
+        {t:'Mille',ph:'/mil/',e:'Thousand',ex:'Mille mercis!'},{t:'Premier/première',ph:'/pʁə.mje/',e:'First',ex:'C\'est ma première fois.'}
+      ]},
+      colors:{name:'🎨 Colors',icon:'🎨',words:[
+        {t:'Rouge',ph:'/ʁuʒ/',e:'Red',ex:'La voiture est rouge.'},{t:'Bleu',ph:'/blø/',e:'Blue',ex:'Le ciel est bleu.'},
+        {t:'Vert',ph:'/vɛʁ/',e:'Green',ex:'L\'herbe est verte.'},{t:'Jaune',ph:'/ʒon/',e:'Yellow',ex:'Le soleil est jaune.'},
+        {t:'Noir',ph:'/nwaʁ/',e:'Black',ex:'Mon chat est noir.'},{t:'Blanc',ph:'/blɑ̃/',e:'White',ex:'La neige est blanche.'},
+        {t:'Orange',ph:'/ɔʁɑ̃ʒ/',e:'Orange',ex:'Une orange.'},{t:'Rose',ph:'/ʁoz/',e:'Pink',ex:'Une fleur rose.'}
+      ]},
+      food:{name:'🍽️ Food',icon:'🍽️',words:[
+        {t:'Pain',ph:'/pɛ̃/',e:'Bread',ex:'Je voudrais du pain.'},{t:'Fromage',ph:'/fʁɔ.maʒ/',e:'Cheese',ex:'J\'adore le fromage.'},
+        {t:'Vin',ph:'/vɛ̃/',e:'Wine',ex:'Un verre de vin rouge.'},{t:'Eau',ph:'/o/',e:'Water',ex:'Une bouteille d\'eau.'},
+        {t:'Viande',ph:'/vjɑ̃d/',e:'Meat',ex:'Je ne mange pas de viande.'},{t:'Poisson',ph:'/pwasɔ̃/',e:'Fish',ex:'Du poisson frais.'},
+        {t:'Fruit',ph:'/fʁɥi/',e:'Fruit',ex:'Un fruit par jour.'},{t:'Légume',ph:'/le.ɡym/',e:'Vegetable',ex:'Mange tes légumes!'},
+        {t:'Déjeuner',ph:'/de.ʒø.ne/',e:'Lunch',ex:'On déjeune ensemble.'},{t:'Dîner',ph:'/di.ne/',e:'Dinner',ex:'Dîner ce soir?'}
+      ]},
+      travel:{name:'✈️ Travel',icon:'✈️',words:[
+        {t:'Avion',ph:'/av.jɔ̃/',e:'Airplane',ex:'Je prends l\'avion demain.'},{t:'Train',ph:'/tʁɛ̃/',e:'Train',ex:'Le train arrive à 14h.'},
+        {t:'Hôtel',ph:'/o.tɛl/',e:'Hotel',ex:'Réserver un hôtel.'},{t:'Billet',ph:'/bi.jɛ/',e:'Ticket',ex:'Un billet aller-retour.'},
+        {t:'Valise',ph:'/va.liz/',e:'Suitcase',ex:'Ma valise est lourde.'},{t:'Passport',ph:'/pas.pɔʁ/',e:'Passport',ex:'Où est mon passport?'},
+        {t:'Gare',ph:'/ɡaʁ/',e:'Train station',ex:'La gare est loin.'},{t:'Aéroport',ph:'/ae.ʁo.pɔʁ/',e:'Airport',ex:'Aller à l\'aéroport.'},
+        {t:'Vacances',ph:'/va.kɑ̃s/',e:'Holidays/vacation',ex:'Bonnes vacances!'}, {t:'Carte',ph:'/kaʁt/',e:'Map/Card',ex:'Je n\'ai pas la carte.'}
+      ]}
+    },
+    phrases:{
+      restaurant:{name:'🍽️ Restaurant',items:[
+        {t:'Bonjour, une table pour deux, s\'il vous plaît.',ph:'/bɔ̃.ʒuʁ œ̃ tabl puʁ dø/',e:'Hello, a table for two, please.'},
+        {t:'Je voudrais commander.',ph:'/ʒə vu.dʁɛ kɔ.mɑ̃.de/',e:'I would like to order.'},
+        {t:"Qu'est-ce que vous recommandez?",ph:'/kɛ s kə vu ʁə.kɔ.mɑ̃.de/',e:'What do you recommend?'},
+        {t:"L'addition, s'il vous plaît.",ph:'/la.di.sjɔ̃ s‿il vu plɛ/',e:'The bill, please!'},
+        {t:"C'est délicieux!",ph:'/se de.li.sjø/',e:"It's delicious!"},
+        {t:'Je ne mange pas de viande.',ph:'/ʒə nə mɑ̃ʒ pa də vjɑ̃d/',e:'I don\'t eat meat.'},
+        {t:"Encore un peu de riz, s'il vous plaît.",ph:'/ɑ̃.kɔʁ œ̃ pø də ʁiz/',e:'Some more rice, please.'}
+      ]},
+      shopping:{name:'🛍️ Shopping',items:[
+        {t:'Combien ça coûte?',ph:'/kɔ̃.bjɛ̃ sa kut/',e:'How much is this?'},
+        {t:"Je cherche un cadeau.",ph:'/ʒə ʃɛʁʃ œ̃ ka.do/',e:"I'm looking for a gift."},
+        {t:'Vous avez ça en rouge?',ph:/vu za.ve sa ɑ̃ ʁuʁ/,e:'Do you have this in red?'},
+        {t:"C'est trop cher.",ph:/se tʁo ʃɛʁ/,e:"It's too expensive."},
+        {t:'Je prends celui-ci.',ph:/ʒə pʁɑ̃ səlɥi.si/,e:"I'll take this one."},
+        {t:'On peut payer par carte?',ph:/ɔ̃ pø pe.je paʁ kaʁt/,e:'Can I pay by card?'},
+        {t:"Je peux l'essayer?",ph:/ʒə ø lɛ.se.je/,e:'Can I try it on?'}
+      ]},
+      directions:{name:'🗺️ Directions',items:[
+        {t:"Où est la gare?",ph:/u ɛ la ɡaʁ/,e:'Where is the train station?'},
+        {t:'Je suis perdu(e).',ph:/ʒə sɥi pɛʁ.dy/,e:'I am lost.'},
+        {t:"C'est loin d'ici?",ph:/se lwɛ̃ d.i.si/,e:'Is it far from here?'},
+        {t:'Tournez à gauche puis tout droit.',ph:/tuʁ.ne a ɡoʃ pɥi tu dwaʁ/,e:'Turn left then go straight.'},
+        {t:"C'est à côté de la pharmacie.",ph:/se a ko.te də la faʁ.ma.si/,e:"It's next to the pharmacy."},
+        {t:'Combien de temps à pied?',ph:/kɔ̃.bjɛ̃ də tɑ̃ a pje/,e:'How long on foot?'},
+        {t:"Y a-t-il un arrêt de bus près d'ici?",ph:/ja til œ̃ na.ʁɛ də bys pʁɛ d.i.si/,e:'Is there a bus stop nearby?'} 
+      ]},
+      emergency:{name:'🚨 Emergency',items:[
+        {t:'Au secours!',ph:/o sə.kuʁ/,e:'Help!'},
+        {t:'Appelez la police!',ph:/ap.le la pɔ.lis/,e:'Call the police!'},
+        {t:"J'ai besoin d'un médecin.",ph:/ʒe bə.zwɛ̃ dœ̃ mɛ.dɛsɛ̃/,e:'I need a doctor.'},
+        {t:'Je ne me sens pas bien.',ph:/ʒə nə mə sɑ̃ pa bjɛ̃/,e:"I don't feel well."},
+        {t:'Parlez-vous anglais?',ph:/paʁ.le vu ɑ̃.ɡlɛ/,e:'Do you speak English?'},
+        {t:'Pouvez-vous répéter?',ph:/pu.ve vu ʁe.pe.te/,e:'Please repeat.'},
+        {t:'Où sont les toilettes?',ph:/u sɔ̃ lɛ twa.lɛt/,e:'Where is the restroom?'} 
+      ]},
+      smalltalk:{name:'💬 Small Talk',items:[
+        {t:'Comment allez-vous?',ph:/kɔ.mɑ̃ ta.le vu/,e:'How are you?'},
+        {t:'Très bien, merci!',ph:/tʁɛ bjɛ̃ mɛʁ.si/,e:'Very well, thanks!'},
+        {t:"Comment ça va?",ph:/kɔ.mɑ̃ sa va/,e:"How's it going?"},
+        {t:'Que faites-vous ce week-end?',ph:/kə fɛt vu cə wik.ɛ̃d/,e:'What are you doing this weekend?'},
+        {t:'On pourrait aller au cinéma?',ph:/ɔ̃ pu.ʁɛ ta.le o si.ne.ma/,e:'Shall we go to the movies?'},
+        {t:'Vous êtes libre ce soir?',ph:/vu zɛt libʁ cə swaʁ/,e:'Are you free tonight?'},
+        {t:"Je t'aime!",ph:/ʒə tɛm/,e:'I love you!'}
+      ]},
+      home:{name:'🏠 At Home',items:[
+        {t:'Je suis fatigué(e).',ph:/ʒə sɥi fa.ti.ɡe/,e:'I am tired.'},
+        {t:"Tu peux m'aider?",ph:/ty ø mɛ.de/,e:'Can you help me?'},
+        {t:"Qu'est-ce qu'on mange ce soir?",ph:/kɛ s kɔ̃ mɑ̃ʒ cə swaʁ/,e:'What are we eating tonight?'},
+        {t:'Je vais me coucher.',ph:/ʒə vɛ mə ku.ʃe/,e:"I'm going to bed."},
+        {t:"Passe-moi le sel, s'il te plaît.",ph:/pas mwa lə sɛl sil tə plɛ/,e:'Pass me the salt, please.'},
+        {t:"C'est ton tour de faire la vaisselle!",ph:/se tɔ̃ tuʁ də fɛʁ la vɛ.sɛl/,e:"It's your turn to do dishes!"},
+        {t:"Je t'aime, bonne nuit!",ph:/ʒə tɛm bɔn nɥi/,e:'I love you, good night!'}
+      ]}
+    }
+  },
+  zh:{
+    langName:'Chinese',flag:'🇨🇳',level:'HSK 1-2',speechLang:'zh-CN',
+    categories:{
+      greetings:{name:'👋 问候',icon:'👋',words:[
+        {t:'你好',ph:'nǐ hǎo',e:'Hello',ex:'你好！很高兴认识你。'},{t:'谢谢',ph:'xiè xie',e:'Thank you',ex:'谢谢你！'},
+        {t:'再见',ph:'zài jiàn',e:'Goodbye',ex:'明天再见！'},{t:'是',ph:'shì',e:'Yes',ex:'是的，我同意。'},
+        {t:'不',ph:'bù',e:'No',ex:'不，谢谢。'},{t:'请问',ph:'qǐng wèn',e:'Excuse me',ex:'请问，洗手间在哪里？'},
+        {t:'对不起',ph:'duì bu qǐ',e:'Sorry',ex:'对不起，我迟到了。'},{t:'没关系',ph:'méi guān xi',e:"It's okay",ex:'没关系，别担心。'}
+      ]},
+      numbers:{name:'🔢 数字',icon:'🔢',words:[
+        {t:'一',ph:'yī',e:'One',ex:'我有一个哥哥。'},{t:'二',ph:'èr',e:'Two',ex:'二加二等于四。'},
+        {t:'三',ph:'sān',e:'Three',ex:'三个人。'},{t:'四',ph:'sì',e:'Four',ex:'四季。'},
+        {t:'五',ph:'wǔ',e:'Five',ex:'五分钟。'},{t:'十',ph:'shí',e:'Ten',ex:'现在是十点。'},
+        {t:'二十',ph:'èr shí',e:'Twenty',ex:'我二十岁。'},{t:'百',ph:'bǎi',e:'Hundred',ex:'一百块。'},
+        {t:'千',ph:'qiān',e:'Thousand',ex:'一千个字。'},{t:'第一',ph:'dì yī',e:'First',ex:'第一次来中国。'}
+      ]},
+      colors:{name:'🎨 颜色',icon:'🎨',words:[
+        {t:'红色',ph:'hóng sè',e:'Red',ex:'我喜欢红色。'},{t:'蓝色',ph:'lán sè',e:'Blue',ex:'天是蓝色的。'},
+        {t:'绿色',ph:'lǜ sè',e:'Green',ex:'草是绿色的。'},{t:'黄色',ph:'huáng sè',e:'Yellow',ex:'香蕉是黄色的。'},
+        {t:'黑色',ph:'hēi sè',e:'Black',ex:'我的猫是黑色的。'},{t:'白色',ph:'bái sè',e:'White',ex:'雪是白色的。'},
+        {t:'橙色',ph:'chéng sè',e:'Orange',ex:'橙子是橙色的。'},{t:'粉色',ph:'fěn sè',e:'Pink',ex:'粉色的花很漂亮。'}
+      ]},
+      food:{name:'🍽️ 食物',icon:'🍽️',words:[
+        {t:'饭',ph:'fàn',e:'Rice/Meal',ex:'吃饭了吗？'},{t:'面',ph:'miàn',e:'Noodles',ex:'我想吃面条。'},
+        {t:'茶',ph:'chá',e:'Tea',ex:'喝茶对身体好。'},{t:'水',ph:'shuǐ',e:'Water',ex:'一杯水，谢谢。'},
+        {t:'肉',ph:'ròu',e:'Meat',ex:'这个肉很好吃。'},{t:'鱼',ph:'yú',e:'Fish',ex:'新鲜的鱼。'},
+        {t:'水果',ph:'shuǐ guǒ',e:'Fruit',ex:'每天吃水果。'},{t:'蔬菜',ph:'shū cài',e:'Vegetable',ex:'多吃蔬菜。'},
+        {t:'早餐',ph:'zǎo cān',e:'Breakfast',ex:'一起吃早餐吧。'},{t:'晚餐',ph:'wǎn cān',e:'Dinner',ex:'晚餐吃什么？'}
+      ]},
+      travel:{name:'✈️ 旅行',icon:'✈️',words:[
+        {t:'飞机',ph:'fēi jī',e:'Airplane',ex:'明天坐飞机。'},{t:'火车',ph:'huǒ chē',e:'Train',ex:'坐火车去北京。'},
+        {t:'酒店',ph:'jiǔ diàn',e:'Hotel',ex:'预订酒店。'},{t:'票',ph:'piào',e:'Ticket',ex:'一张往返票。'},
+        {t:'行李箱',ph:'xíng li xiāng',e:'Suitcase',ex:'行李箱很重。'},{t:'护照',ph:'hù zhào',e:'Passport',ex:'我的护照在哪里？'},
+        {t:'车站',ph:'chē zhàn',e:'Station',ex:'车站在那边。'},{t:'机场',ph:'jī chǎng',e:'Airport',ex:'去机场怎么走？'},
+        {t:'假期',ph:'jià qī',e:'Holiday/Vacation',ex:'假期快乐！'},{t:'地图',ph:'dì tú',e:'Map',ex:'看地图找路。'}
+      ]}
+    },
+    phrases:{
+      restaurant:{name:'🍽️ 餐厅',items:[
+        {t:'两位，请给我们一张桌子。',ph:'liǎng wèi',e:'A table for two, please.'},
+        {t:'我要点菜。',ph:'wǒ yào diǎn cài',e:'I would like to order.'},
+        {t:'你们有什么推荐的？',ph:'nǐmen yǒu shénme tuījiàn de',e:'What do you recommend?'},
+        {t:'买单，谢谢！',ph:'mǎi dān xièxie',e:'The bill, please!'},
+        {t:'很好吃！',ph:'hěn hǎo chī',e:"It's delicious!"},
+        {t:'我不吃肉。',ph:'wǒ bù chī ròu',e:'I don\'t eat meat.'},
+        {t:'请再来一点米饭。',ph:'qǐng zài lái yīdiǎn mǐfàn',e:'Some more rice, please.'}
+      ]},
+      shopping:{name:'🛍️ 购物',items:[
+        {t:'这个多少钱？',ph:'zhège duōshao qián',e:'How much is this?'},
+        {t:'我在找礼物。',ph:'wǒ zài zhǎo lǐwù',e:"I'm looking for a gift."},
+        {t:'有红色的吗？',ph:'yǒu hóngsè de ma',e:'Do you have this in red?'},
+        {t:'太贵了。',ph:'tài guì le',e:"It's too expensive."},
+        {t:'我买这个。',ph:'wǒ mǎi zhège',e:"I'll take this one."},
+        {t:'可以刷卡吗？',ph:'kěyǐ shuā kǎ ma',e:'Can I pay by card?'},
+        {t:'可以试一下吗？',ph:'kěyǐ shì yīxià ma',e:'Can I try it on?'} 
+      ]},
+      directions:{name:'🗺️ 问路',items:[
+        {t:'火车站在哪里？',ph:'huǒchē zhàn zài nǎlǐ',e:'Where is the train station?'},
+        {t:'我迷路了。',ph:'wǒ mílù le',e:'I am lost.'},
+        {t:'离这里远吗？',ph:'lí zhèlǐ yuǎn ma',e:'Is it far from here?'},
+        {t:'向左转然后直走。',ph:'xiàng zuǒ zhuǎn ránhòu zhízǒu',e:'Turn left then go straight.'},
+        {t:'在药店旁边。',ph:'zài yàodiàn pángbiān',e:'Next to the pharmacy.'},
+        {t:'走路要多久？',ph:'zǒulù yào duōjiǔ',e:'How long on foot?'},
+        {t:'附近有公交站吗？',ph:'fùjìn yǒu gōngjiāo zhàn ma',e:'Is there a bus stop nearby?'} 
+      ]},
+      emergency:{name:'🚨 紧急情况',items:[
+        {t:'救命！',ph:'jiù mìng!',e:'Help!'},
+        {t:'叫警察！',ph:'jiào jǐngchá!',e:'Call the police!'},
+        {t:'我需要医生。',ph:'wǒ xūyào yīshēng',e:'I need a doctor.'},
+        {t:'我不舒服。',ph:'wǒ bù shūfu',e:"I don't feel well."},
+        {t:'你会说英语吗？',ph:'nǐ huì shuō Yīngyǔ ma',e:'Do you speak English?'},
+        {t:'请再说一遍。',ph:'qǐng zài shuō yībiàn',e:'Please say again.'},
+        {t:'洗手间在哪里？',ph:'xǐshǒujiān zài nǎlǐ',e:'Where is the restroom?'} 
+      ]},
+      smalltalk:{name:'💬 闲聊',items:[
+        {t:'你好吗？',ph:'nǐ hǎo ma?',e:'How are you?'},
+        {t:'我很好谢谢！',ph:'wǒ hěn hǎo xièxie!',e:"I'm fine, thanks!"},
+        {t:'最近怎么样？',ph:'zuìjìn zěnmeyàng?',e:'How have you been?'},
+        {t:'你周末做什么？',ph:'nǐ zhōumò zuò shénme?',e:'What are you doing this weekend?'},
+        {t:'我们去看电影吧？',ph:'wǒmen qù kàn diànyǐng ba?',e:'Shall we go to the movies?'},
+        {t:'你今晚有空吗？',ph:'nǐ jīnwǎn yǒu kòng ma',e:'Are you free tonight?'},
+        {t:'我爱你！',ph:'wǒ ài nǐ!',e:'I love you!'}
+      ]},
+      home:{name:'🏠 在家',items:[
+        {t:'我累了。',ph:'wǒ lèi le.',e:'I am tired.'},
+        {t:'你能帮我吗？',ph:'nǐ néng bāng wǒ ma?',e:'Can you help me?'},
+        {t:'今晚吃什么？',ph:'jīnwǎn chī shénme?',e:'What are we eating tonight?'},
+        {t:'我要去睡了。',ph:'wǒ yào qù shuì le.',e:"I'm going to bed."},
+        {t:'请把盐递给我。',ph:'qǐng bǎ yán dì gěi wǒ.',e:'Pass me the salt, please.'},
+        {t:'今天该你洗碗了！',ph:'jīntiān gāi nǐ xǐ wǎn le!',e:"It's your turn to do dishes!"},
+        {t:'我爱你晚安！',ph:'wǒ ài nǐ wǎn ān!',e:'I love you, good night!'}
+      ]}
+    }
+  }
+};
+
+// ==================== STATE ====================
+let state={profile:null,totalScore:0,wins:0,streak:0,wordsLearned:[],catProgress:{},achievements:{},firstLearnDate:null,dailyProgress:{}};
+// PK state
+let pkQs=[],pkQi=0,pkJ=0,pkL=0,pkSJ=0,pkSL=0,pkBSJ=0,pkBSL=0,pkCJ=0,pkCL=0,
+   pkTurn='jiani',pkTimer=null,pkTimeLeft=15,pkAnswered=false,pkStartT=0;
+// Flashcard state
+let fcCards=[],fcIdx=0,fcFlipped=false;
+// Pronunciation state
+let pronRec=null,pronRecFlag=false,pronCur=null;
+
+// ==================== STORAGE ====================
+function loadState(){try{const s=JSON.parse(localStorage.getItem('lpk_v2')||'{}');state.profile=s.profile||null;state.totalScore=s.totalScore||0;state.wins=s.wins||0;state.streak=s.streak||0;state.wordsLearned=s.wordsLearned||[];state.catProgress=s.catProgress||{};state.achievements=s.achievements||{};state.firstLearnDate=s.firstLearnDate||null;state.dailyProgress=s.dailyProgress||{};}catch(e){}}
+function saveState(){try{localStorage.setItem('lpk_v2',JSON.stringify(state));}catch(e){}}
+
+// ==================== NAVIGATION ====================
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  const el=document.getElementById('screen-'+name);
+  if(el)el.classList.add('active');else console.warn('no screen:',name);
+  const nb=document.getElementById('navbar'),bn=document.getElementById('bottom-nav');
+  if(name==='home'){nb.style.display='none';bn.classList.add('hidden');}
+  else{nb.style.display='flex';bn.classList.remove('hidden');}
+  document.querySelectorAll('.nav-item').forEach(function(i){i.classList.remove('active');});
+  const nm={menu:'nav-menu',practice:'nav-practice',vocab:'nav-vocab',progress:'nav-progress'};
+  if(nm[name])document.getElementById(nm[name])?.classList.add('active');
+  // screen-specific init
+  if(name==='vocab')renderVocab();
+  if(name==='phrase')renderPhrase();
+  if(name==='practice')initPractice();
+  if(name==='progress')renderProgress();
+  if(name==='menu')updateStats();
+  window.scrollTo(0,0);
+}
+function goHome(){showScreen('menu');}
+
+// ==================== HOME ====================
+function initHome(){
+  const ej=document.getElementById('home-avatar-jiani'),el=document.getElementById('home-avatar-leo');
+  if(ej)ej.innerHTML=AVATAR_J;if(el)el.innerHTML=AVATAR_L;
+}
+function selectProfile(p){
+  state.profile=p;
+  document.getElementById('profile-jiani').classList.toggle('selected',p==='jiani');
+  document.getElementById('profile-leo').classList.toggle('selected',p==='leo');
+}
+function startApp(){
+  if(!state.profile){showToast('Pick your profile first!','error');return;}
+  saveState();initUI();showScreen('menu');
+}
+function logout(){
+  state.profile=null;saveState();
+  document.getElementById('navbar').style.display='none';
+  document.getElementById('bottom-nav').classList.add('hidden');
+  document.getElementById('profile-jiani').classList.remove('selected');
+  document.getElementById('profile-leo').classList.remove('selected');
+  showScreen('home');
+}
+function initUI(){
+  const p=PROFILES[state.profile];if(!p)return;
+  const ld=DATA[p.learnsLang];
+  document.getElementById('navbar').style.display='flex';
+  const bd=document.getElementById('nav-lang-badge');
+  bd.className='lang-badge '+p.learnsLang;bd.textContent=ld.flag+' '+ld.langName;
+  document.getElementById('nav-avatar').innerHTML=p.avatar;
+  document.getElementById('menu-avatar').innerHTML=p.avatar;
+  document.getElementById('bottom-nav').classList.remove('hidden');
+  document.getElementById('menu-welcome-text').textContent='Hi, '+p.name+'! 👋';
+  document.getElementById('menu-learning-text').textContent='Learning '+ld.langName+' '+ld.flag+' • '+ld.level;
+  updateStats();
+}
+function updateStats(){
+  document.getElementById('stat-streak').textContent=state.streak+'🔥';
+  document.getElementById('stat-total-score').textContent=state.totalScore;
+  document.getElementById('stat-words').textContent=state.wordsLearned.length;
+  document.getElementById('stat-wins').textContent=state.wins;
+}
+
+// ==================== SPEECH ====================
+function speakText(txt){
+  if(!window.speechSynthesis){showToast('Speech not supported');return;}
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  const ld=DATA[PROFILES[state.profile].learnsLang];
+  u.lang=ld.speechLang;u.rate=.82;u.pitch=1;
+  window.speechSynthesis.speak(u);
+}
+
+// ==================== UTILS ====================
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function showToast(msg,type){if(!msg)return;const c=document.getElementById('toast-container');const t=document.createElement('div');t.className='toast '+(type||'');t.textContent=msg;c.appendChild(t);setTimeout(function(){t.remove()},2600);}
+function showScorePopup(text,positive){const el=document.createElement('div');el.className='score-popup';el.textContent=text;el.style.color=positive?'var(--ok)':'var(--err)';el.style.left=(Math.random()*60+20)+'%';el.style.top='40%';document.getElementById('spc').appendChild(el);setTimeout(function(){el.remove()},1300);}
+
+// ==================== PK BATTLE ====================
+function startPK(){
+  if(!state.profile){showScreen('home');return;}
+  document.getElementById('pk-start-view').style.display='flex';
+  document.getElementById('pk-cd-view').style.display='none';
+  document.getElementById('pk-active-view').className='pk-battle-screen';
+  document.getElementById('pk-sa-jiani').innerHTML=AVATAR_J;
+  document.getElementById('pk-sa-leo').innerHTML=AVATAR_L;
+  showScreen('pk');
+}
+function pkBegin(){
+  // Build questions: alternate Jiani(French) and Léo(Chinese)
+  const fPool=[],cPool=[];
+  Object.values(DATA.fr.categories).forEach(function(cat){cat.words.forEach(function(w){fPool.push({...w});});});
+  Object.values(DATA.zh.categories).forEach(function(cat){cat.words.forEach(function(w){cPool.push({...w});});});
+  const fQs=shuffle(fPool).slice(0,5),cQs=shuffle(cPool).slice(0,5);
+  pkQs=[];
+  fQs.forEach(function(q,i){pkQs.push({player:'jiani',...q,ansKey:'e'});});
+  cQs.forEach(function(q,i){pkQs.push({player:'leo',...q,ansKey:'e'});});
+  pkQs=pkQs.slice(0,10);pkQi=0;pkJ=0;pkL=0;pkSJ=0;pkSL=0;pkBSJ=0;pkBSL=0;pkCJ=0;pkCL=0;
+  document.getElementById('pk-start-view').style.display='none';
+  document.getElementById('pk-cd-view').style.display='flex';
+  document.getElementById('pk-active-view').className='pk-battle-screen';
+  // set initial dots
+  renderPkDots();
+  showPkCountdown(pkQs[0]?.player||'jiani');
+}
+function renderPkDots(){
+  const c=document.getElementById('pk-dots');c.innerHTML='';
+  for(let i=0;i<pkQs.length;i++){
+    const d=document.createElement('div');d.className='pk-dot';
+    if(i<pkQi)d.className+=' dot-done';else if(i===pkQi)d.className+=' dot-current';
+    c.appendChild(d);
+  }
+}
+function showPkCountdown(player){
+  const cdView=document.getElementById('pk-cd-view');
+  cdView.style.display='flex';
+  const turnInfo=document.getElementById('cd-turn');
+  turnInfo.innerHTML='';
+  if(player==='jiani'){
+    const aw=document.createElement('div');aw.className='avatar-wrap';aw.innerHTML=AVATAR_J;aw.style.width='36px';aw.style.height='36px';turnInfo.appendChild(aw);
+    const tn=document.createElement('span');tn.className='turn-name';tn.textContent='Jiani\'s Turn → French';turnInfo.appendChild(tn);
+  } else {
+    const aw=document.createElement('div');aw.className='avatar-wrap';aw.innerHTML=AVATAR_L;aw.style.width='36px';aw.style.height='36px';turnInfo.appendChild(aw);
+    const tn=document.createElement('span');tn.className='turn-name';tn.textContent='Léo\'s Turn → Chinese';turnInfo.appendChild(tn);
+  }
+  document.getElementById('cd-ready').textContent='Get ready!';
+  let cnt=3;
+  document.getElementById('cd-num').textContent=cnt;
+  const iv=setInterval(function(){cnt--;document.getElementById('cd-num').textContent=cnt;if(cnt<=0){clearInterval(iv);startPkQuestion();}},1000);
+}
+function startPkQuestion(){
+  document.getElementById('pk-cd-view').style.display='none';
+  const av=document.getElementById('pk-active-view');
+  av.className='pk-battle-screen active';
+  if(pkQi>=pkQs.length){endBattle();return;}
+  const q=pkQs[pkQi];pkTurn=q.player;pkAnswered=false;pkTimeLeft=15;
+  // Update UI
+  document.getElementById('pk-a-jiani').innerHTML=AVATAR_J;
+  document.getElementById('pk-a-leo').innerHTML=AVATAR_L;
+  document.getElementById('pk-s-jiani').textContent=pkJ;
+  document.getElementById('pk-s-leo').textContent=pkL;
+  document.getElementById('pk-turn-lbl').textContent=(pkTurn==='jiani'?"JIANI'S TURN":"LEO'S TURN");
+  document.getElementById('pk-turn-lbl').style.color=(pkTurn==='jiani'?'#E84040':'#0066CC');
+  document.getElementById('q-word').textContent=q.t;
+  document.getElementById('q-ph').textContent=typeof q.ph==='string'?q.ph:(q.ph.source||'');
+  document.getElementById('q-hint').textContent='Translate to English';
+  // Answers
+  const allWords=pkTurn==='jiani'?Object.values(DATA.fr.categories).flatMap(c=>c.words):Object.values(DATA.zh.categories).flatMap(c=>c.words);
+  let wrongOpts=allWords.filter(w=>w.e!==q.e);wrongOpts=shuffle(wrongOpts).slice(0,3);
+  const opts=[{text:q.e,correct:true},...wrongOpts.map(function(w){return{text:w.e,correct:false};})];
+  const shuffledOpts=shuffle(opts);
+  const ag=document.getElementById('q-answers');ag.innerHTML='';
+  shuffledOpts.forEach(function(opt){
+    const btn=document.createElement('button');btn.className='answer-btn';btn.textContent=opt.text;
+    btn.onclick=function(){handleAnswer(opt.correct,q.e);};ag.appendChild(btn);
+  });
+  // Timer ring
+  document.getElementById('q-time').textContent=pkTimeLeft;
+  document.getElementById('timer-svg').style.strokeDashoffset='0';
+  renderPkDots();
+  pkStartT=Date.now();
+  pkTimer=setInterval(function(){
+    pkTimeLeft--;
+    document.getElementById('q-time').textContent=pkTimeLeft;
+    const pct=pkTimeLeft/15;document.getElementById('timer-svg').style.strokeDashoffset=182.2*(1-pct);
+    if(pkTimeLeft<=0){clearInterval(pkTimer);pkTimer=null;if(!pkAnswered)handleAnswer(false,'');}
+  },1000);
+}
+function handleAnswer(correct,expected){
+  if(pkAnswered)return;pkAnswered=true;
+  if(!state.firstLearnDate){state.firstLearnDate=new Date().toISOString().slice(0,10);}
+  if(pkTimer){clearInterval(pkTimer);pkTimer=null;}
+  const elapsed=((Date.now()-pkStartT)/1000).toFixed(1);
+  const btns=document.querySelectorAll('.answer-btn');
+  btns.forEach(function(b){
+    if(b.textContent===expected)b.classList.add('correct');
+    else b.style.opacity='.4';
+  });
+  let pts=0;
+  if(correct){
+    const base=100,speedBonus=Math.max(0,Math.floor((15-parseFloat(elapsed))*3));
+    pts=base+speedBonus;
+    if(pkTurn==='jiani'){
+      pkJ+=pts;pkSJ++;pkCJ++;if(pkSJ>=3)pkJ+=pkSJ*10;
+      else pkSJ=0;
+      if(pkSJ>pkBSJ)pkBSJ=pkSJ;
+    } else {
+      pkL+=pts;pkSL++;pkCL++;
+      if(pkSL>=3)pkL+=pkSL*10;
+      else pkSL=0;
+      if(pkSL>pkBSL)pkBSL=pkSL;
+    }
+    showScorePopup('+'+pts,true);
+    // track word learned
+    const wId=pkTurn==='jiani'?'fr_'+pkQs[pkQi].t:'zh_'+pkQs[pkQi].t;
+    if(!state.wordsLearned.includes(wId)){state.wordsLearned.push(wId);}
+  } else {
+    if(pkTurn==='jiani'){pkSJ=0;}else{pkSL=0;}
+    showScorePopup('❌',false);
+  }
+  // Update scores display
+  document.getElementById('pk-s-jiani').textContent=pkJ;
+  document.getElementById('pk-s-leo').textContent=pkL;
+  setTimeout(function(){
+    pkQi++;
+    if(pkQi<pkQs.length){
+      const nextQ=pkQs[pkQi];
+      if(nextQ.player!==pkTurn){
+        showPassOverlay(nextQ.player);
+      } else {
+        startPkQuestion();
+      }
+    } else {
+      endBattle();
+    }
+  },1100);
+}
+function showPassOverlay(player){
+  const ov=document.getElementById('pass-overlay');
+  ov.classList.add('show');
+  document.getElementById('pass-av').innerHTML=(player==='jiani'?AVATAR_J:AVATAR_L);
+  document.getElementById('pass-tit').textContent='Pass to '+(player==='jiani'?'Jiani':'Léo');
+  document.getElementById('pass-sub').textContent="It's your turn!";
+}
+function dismissPassOverlay(){
+  document.getElementById('pass-overlay').classList.remove('show');
+  setTimeout(function(){startPkQuestion()},200);
+}
+function endBattle(){
+  if(pkTimer){clearInterval(pkTimer);pkTimer=null;}
+  state.totalScore+=pkJ+pkL;
+  if(pkJ>pkL)state.wins++;
+  saveState();
+  const winner=pkJ>pkL?'jiani':(pkL>pkJ?'leo':'tie');
+  document.getElementById('res-emoji').textContent=(winner==='tie')?'🤝':(winner==='jiani')?'🏆':'🏆';
+  document.getElementById('res-title').textContent=(winner==='tie')?"It's a Tie!":(winner==='jiani')?'Jiani Wins!':'Léo Wins!';
+  document.getElementById('res-sub').textContent='Jiani: '+pkJ+' pts | Léo: '+pkL+' pts';
+  const scDiv=document.getElementById('res-scores');
+  scDiv.innerHTML='<div class="result-player'+(winner==='jiani'||winner==='tie'?' winner':'')+'">'
+    +'<div class="avatar-wrap">'+AVATAR_J+'</div>'
+    +'<div class="result-player-name">Jiani</div>'
+    +'<div class="result-player-score">'+pkJ+'</div>'
+    +'<div style="font-size:.72rem;color:var(--muted);margin-top:4px">Accuracy: '+(pkQs.filter(q=>q.player==='jiani').length?Math.round(pkCJ/pkQs.filter(q=>q.player==='jiani').length*100):0)+'%</div>'
+    +'</div>'
+    +'<div class="result-player'+(winner==='leo'||winner==='tie'?' winner':'')+'">'
+    +'<div class="avatar-wrap">'+AVATAR_L+'</div>'
+    +'<div class="result-player-name">Léo</div>'
+    +'<div class="result-player-score">'+pkL+'</div>'
+    +'<div style="font-size:.72rem;color:var(--muted);margin-top:4px">Accuracy: '+(pkQs.filter(q=>q.player==='leo').length?Math.round(pkCL/pkQs.filter(q=>q.player==='leo').length*100):0)+'%</div>'
+    +'</div>';
+  showScreen('result');
+}
+
+// ==================== FLASHCARDS ====================
+function initPractice(){
+  const ld=DATA[PROFILES[state.profile].learnsLang];
+  fcCards=[];
+  Object.values(ld.categories).forEach(function(cat){
+    cat.words.forEach(function(w){fcCards.push({...w,catName:cat.name});});
+  });
+  fcCards=shuffle(fcCards);fcIdx=0;fcFlipped=false;
+  showFcCard();
+}
+function showFcCard(){
+  if(fcIdx>=fcCards.length){
+    document.getElementById('fc-card').innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)"><div style="font-size:3rem;margin-bottom:12px">🎉</div><div style="font-size:1.2rem;font-weight:800">All done!</div><div style="font-size:.88rem;margin-top:8px">You reviewed '+fcCards.length+' cards.</div><button class="btn btn-primary" style="margin-top:20px" onclick="initPractice()">🔄 Restart</button></div>';
+    document.getElementById('fc-rating').style.display='none';
+    return;
+  }
+  document.getElementById('fc-rating').style.display='flex';
+  fcFlipped=false;document.getElementById('fc-card').classList.remove('flipped');
+  const c=fcCards[fcIdx];
+  document.getElementById('fc-word').textContent=c.t;
+  document.getElementById('fc-ph').textContent=(typeof c.ph==='string'?c.ph:c.ph.source||'');
+  document.getElementById('fc-b-word').textContent=c.e;
+  document.getElementById('fc-b-mean').textContent=c.t;
+  document.getElementById('fc-b-ex').textContent=c.ex||'';
+  document.getElementById('fc-counter').textContent=(fcIdx+1)+' / '+fcCards.length;
+  const pct=((fcIdx)/fcCards.length)*100;
+  document.getElementById('fc-progress').style.width=pct+'%';
+}
+function flipCard(){
+  if(fcIdx>=fcCards.length)return;
+  fcFlipped=!fcFlipped;
+  document.getElementById('fc-card').classList.toggle('flipped',fcFlipped);
+}
+function rateCard(rating){
+  if(fcIdx>=fcCards.length)return;
+  if(!state.firstLearnDate){state.firstLearnDate=new Date().toISOString().slice(0,10);}
+  const c=fcCards[fcIdx];
+  const catKey=(PROFILES[state.profile].learnsLang)+'_'+c.catName;
+  if(!state.catProgress[catKey])state.catProgress[catKey]={seen:0,mastered:0};
+  state.catProgress[catKey].seen++;
+  if(rating==='good'||rating==='easy'){state.catProgress[catKey].mastered++;
+  if(!state.dailyProgress)state.dailyProgress={};var td=new Date().toISOString().slice(0,10);if(!state.dailyProgress[td])state.dailyProgress[td]={};state.dailyProgress[td][catKey]=(state.dailyProgress[td][catKey]||0)+1;}
+  saveState();
+  fcIdx++;showFcCard();
+}
+
+// ==================== VOCABULARY ====================
+function renderVocab(){
+  const ld=DATA[PROFILES[state.profile].learnsLang];
+  const tabsEl=document.getElementById('v-tabs');tabsEl.innerHTML='';
+  const cats=Object.keys(ld.categories);
+  let activeCat=cats[0];
+  cats.forEach(function(k,i){
+    const cat=ld.categories[k];
+    const tb=document.createElement('button');
+    tb.className='vtab'+(i===0?' active':'');
+    tb.textContent=cat.name;
+    tb.onclick=function(){
+      tabsEl.querySelectorAll('.vtab').forEach(function(t){t.classList.remove('active');});
+      tb.classList.add('active');activeCat=k;renderVocabList(k);
+    };
+    tabsEl.appendChild(tb);
+  });
+  renderVocabList(activeCat);
+}
+function renderVocabList(catKey){
+  const ld=DATA[PROFILES[state.profile].learnsLang];
+  const cat=ld.categories[catKey];if(!cat)return;
+  const list=document.getElementById('v-list');list.innerHTML='';
+  cat.words.forEach(function(w){
+    const div=document.createElement('div');div.className='word-card';
+    div.innerHTML='<div class="word-icon">'+cat.icon+'</div>'
+      +'<div class="word-main"><div class="word-target">'+w.t+'</div>'
+      +'<div class="word-ph">'+(typeof w.ph==='string'?w.ph:w.ph.source||'')+'</div>'
+      +'<div class="word-en">'+w.e+'</div>'
+      +'<div class="word-ex">'+(w.ex||'')+'</div></div>'
+      +'<button class="word-speak" onclick="event.stopPropagation();speakText(\''+w.t.replace(/'/g,"\\'")+'\')" title="Play">🔊</button>';
+    list.appendChild(div);
+  });
+}
+
+// ==================== PHRASE BOOK ====================
+function renderPhrase(){
+  const ld=DATA[PROFILES[state.profile].learnsLang];
+  const tabsEl=document.getElementById('phr-tabs');tabsEl.innerHTML='';
+  const keys=Object.keys(ld.phrases);
+  keys.forEach(function(k,i){
+    const sc=ld.phrases[k];
+    const tb=document.createElement('button');
+    tb.className='ptab'+(i===0?' active':'');
+    tb.textContent=sc.name;
+    tb.onclick=function(){
+      tabsEl.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('active');});
+      tb.classList.add('active');renderPhraseList(k);
+    };
+    tabsEl.appendChild(tb);
+  });
+  renderPhraseList(keys[0]);
+}
+function renderPhraseList(key){
+  const ld=DATA[PROFILES[state.profile].learnsLang];
+  const sc=ld.phrases[key];if(!sc)return;
+  const list=document.getElementById('phr-list');list.innerHTML='';
+  sc.items.forEach(function(item,idx){
+    const div=document.createElement('div');div.className='phrase-row';
+    div.innerHTML='<div><div class="phrase-target">'+item.t+'</div>'
+      +'<div class="phrase-ph">'+item.ph+'</div>'
+      +'<div class="phrase-en">'+item.e+'</div>'
+      +'<div class="phrase-actions">'
+      +'<button class="pron-btn" onclick="speakText(\''+item.t.replace(/'/g,"\\'")+'\')">🔊 Listen</button>'
+      +'<button class="pron-btn" onclick="openPronModal('+idx+',\''+key+'\')">🎤 Practice</button>'
+      +'</div></div>';
+    list.appendChild(div);
+  });
+}
+
+// ==================== PRONUNCIATION ====================
+function openPronModal(idx,key){
+  const ld=DATA[PROFILES[state.profile].learnsLang];
+  const item=ld.phrases[key].items[idx];
+  pronCur=item;
+  document.getElementById('pron-target').textContent=item.t;
+  document.getElementById('pron-ph').textContent=item.ph;
+  document.getElementById('pron-en').textContent=item.e;
+  document.getElementById('pron-step1').classList.add('active');
+  document.getElementById('pron-step2').style.opacity='.4';
+  document.getElementById('pron-res').className='pron-result';
+  document.getElementById('pron-retry-btn').style.display='none';
+  document.getElementById('pron-rec-btn').className='pron-record-btn';
+  document.getElementById('pron-rec-btn').textContent='🎤';
+  document.getElementById('pron-play-btn').style.display='inline-flex';
+  document.getElementById('pron-overlay').classList.add('show');
+}
+function closePronModal(){document.getElementById('pron-overlay').classList.remove('show');stopRec();}
+function playPronSpeak(){
+  if(pronCur)speakText(pronCur.t);
+}
+function playPronPhrase(){playPronSpeak();}
+function toggleRecord(){
+  if(pronRecFlag){stopRec();processRecog();return;}
+  if(!('webkitSpeechRecognition'in window)&&!('SpeechRecognition'in window)){
+    showToast('Speech recognition not supported in this browser 😢','error');return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  pronRec=new SR();
+  const ld=DATA[PROFILES[state.profile].learnsLang];
+  pronRec.lang=ld.speechLang;pronRec.continuous=false;pronRec.interimResults=false;pronRec.maxAlternatives=3;
+  pronRec.onstart=function(){
+    pronRecFlag=true;
+    document.getElementById('pron-rec-btn').className='pron-record-btn recording';
+    document.getElementById('pron-rec-btn').textContent='⏹';
+    document.getElementById('pron-step2').style.opacity='1';
+    document.getElementById('pron-step2').classList.add('active');
+  };
+  pronRec.onresult=function(ev){
+    const transcript=ev.results[0][0].transcript;
+    scorePronunciation(transcript);
+  };
+  pronRec.onerror=function(e){
+    console.error('speech error:',e.error);stopRec();
+    if(e.error==='no-speech')showToast('No speech detected. Try again!','error');
+    else showToast('Recognition error: '+e.error,'error');
+  };
+  pronRec.onend=function(){if(pronRecFlag){stopRec();}pronRecFlag=false;};
+  pronRec.start();
+}
+function stopRec(){
+  if(pronRec){try{pronRec.stop();}catch(e){}}
+  pronRecFlag=false;
+  document.getElementById('pron-rec-btn').className='pron-record-btn';
+  document.getElementById('pron-rec-btn').textContent='🎤';
+}
+function processRecog(){/* handled in onresult */}
+function scorePronunciation(transcript){
+  if(!pronCur)return;
+  const target=pronCur.t.toLowerCase().trim();
+  const heard=transcript.toLowerCase().trim();
+  let score=0;
+  // Simple scoring: check character overlap for Chinese, word overlap for French
+  if(PROFILES[state.profile].learnsLang==='zh'){
+    const targetChars=target.split('').filter(function(c){return!/[\s\p{P}]/u.test(c);});
+    const heardChars=heard.split('').filter(function(c){return!/[\s\p{P}]/u.test(c);});
+    let matches=0;
+    targetChars.forEach(function(tc){if(heardChars.includes(tc))matches++;});
+    score=targetChars.length?Math.round((matches/targetChars.length)*100):0;
+  } else {
+    const targetWords=target.split(/\s+/);const heardWords=heard.split(/\s+/);
+    let matches=0;
+    targetWords.forEach(function(tw){if(heardWords.includes(tw))matches++;});
+    score=targetWords.length?Math.round((matches/targetWords.length)*100):0;
+  }
+  showPronResult(score,heard);
+}
+function showPronResult(score,heard){
+  const resEl=document.getElementById('pron-res');
+  resEl.className='pron-result show';
+  document.getElementById('pron-score').textContent=score+'%';
+  document.getElementById('pron-heard').textContent='Heard: "'+heard+'"';
+  if(score>=85){
+    resEl.classList.add('good');document.getElementById('pron-rlabel').textContent='🌟 Excellent!';
+  } else if(score>=60){
+    resEl.classList.add('meh');document.getElementById('pron-rlabel').textContent='😊 Good job!';
+  } else if(score>=40){
+    resEl.classList.add('try');document.getElementById('pron-rlabel').textContent='💪 Keep practicing!';
+  } else {
+    resEl.classList.add('try');document.getElementById('pron-rlabel').textContent='🔄 Try again!';
+  }
+  document.getElementById('pron-retry-btn').style.display='inline-flex';
+  document.getElementById('pron-play-btn').style.display='none';
+}
+function retryPron(){
+  document.getElementById('pron-res').className='pron-result';
+  document.getElementById('pron-play-btn').style.display='inline-flex';
+  document.getElementById('pron-retry-btn').style.display='none';
+  document.getElementById('pron-step2').style.opacity='.4';
+}
+
+// ==================== PROGRESS ====================
+function renderProgress(){
+  var today=new Date().toISOString().slice(0,10);
+  var dayLabel='Ready to start! 🚀';
+  if(state.firstLearnDate){
+    var d1=new Date(state.firstLearnDate),d2=new Date(today);
+    var dayDiff=Math.floor((d2-d1)/(1000*60*60*24))+1;
+    dayLabel='Day '+dayDiff;
+  }
+  document.getElementById('prog-overall').innerHTML='<span style="font-size:1.8rem">📅</span><div style="flex:1;text-align:center"><div style="font-size:1.5rem;font-weight:800;color:#4A90D9">'+dayLabel+'</div><div style="font-size:.8rem;color:var(--muted);margin-top:2px">'+(state.firstLearnDate?'Keep it up! 💪':'Start learning to track your streak')+'</div></div>';
+  // Daily progress - combined both players
+  var dailyTotal=0,totalAll=0;
+  Object.values(DATA.fr.categories).forEach(function(c){totalAll+=c.words.length;});
+  Object.values(DATA.zh.categories).forEach(function(c){totalAll+=c.words.length;});
+  if(state.dailyProgress&&state.dailyProgress[today]){
+    Object.values(state.dailyProgress[today]).forEach(function(v){dailyTotal+=v;});
+  }
+  var dPct=totalAll>0?Math.round((dailyTotal/totalAll)*100):0;
+  document.getElementById('prog-daily').innerHTML='<span style="white-space:nowrap;font-weight:700">Today</span><div class="cat-bar-bg" style="flex:1;margin:0 12px"><div class="cat-bar-fill" style="background:#FF6B6B;width:'+dPct+'%"></div></div><span style="white-space:nowrap;color:#E84040;font-weight:700">'+dailyTotal+' words</span>';
+  // Categories - side by side: Jiani left, Léo right
+  var catContainer=document.getElementById('prog-categories');catContainer.innerHTML='';
+  var wrap=document.createElement('div');wrap.style.cssText='display:flex;gap:12px;align-items:flex-start';
+  // Jiani's column
+  var jCol=document.createElement('div');jCol.style.cssText='flex:1;min-width:0';
+  var jH=document.createElement('div');jH.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:10px;justify-content:center';
+  jH.innerHTML='<div style="width:24px;height:24px;border-radius:50%;overflow:hidden">'+AVATAR_J+'</div><span style="font-weight:800;font-size:.85rem;color:#E84040">Jiani 🇫🇷</span>';
+  jCol.appendChild(jH);
+  Object.entries(DATA.fr.categories).forEach(function(e){
+    var cp=state.catProgress['fr_'+e[1].name]||{seen:0,mastered:0};
+    var total=e[1].words.length;var pct=Math.min(100,Math.round((cp.mastered/total)*100));
+    var div=document.createElement('div');div.className='cat-item';div.style.cssText='margin-bottom:8px';
+    div.innerHTML='<div class="cat-info"><div class="cat-name" style="font-size:.75rem">'+e[1].name+'</div>'
+      +'<div class="cat-bar-bg" style="height:6px"><div class="cat-bar-fill" style="width:'+pct+'%"></div></div></div>'
+      +'<div class="cat-pct" style="font-size:.7rem">'+cp.mastered+'/'+total+'</div>';
+    jCol.appendChild(div);
+  });
+  wrap.appendChild(jCol);
+  // Léo's column
+  var lCol=document.createElement('div');lCol.style.cssText='flex:1;min-width:0';
+  var lH=document.createElement('div');lH.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:10px;justify-content:center';
+  lH.innerHTML='<div style="width:24px;height:24px;border-radius:50%;overflow:hidden">'+AVATAR_L+'</div><span style="font-weight:800;font-size:.85rem;color:#0066CC">Léo 🇨🇳</span>';
+  lCol.appendChild(lH);
+  Object.entries(DATA.zh.categories).forEach(function(e){
+    var cp=state.catProgress['zh_'+e[1].name]||{seen:0,mastered:0};
+    var total=e[1].words.length;var pct=Math.min(100,Math.round((cp.mastered/total)*100));
+    var div=document.createElement('div');div.className='cat-item';div.style.cssText='margin-bottom:8px';
+    div.innerHTML='<div class="cat-info"><div class="cat-name" style="font-size:.75rem">'+e[1].name+'</div>'
+      +'<div class="cat-bar-bg" style="height:6px"><div class="cat-bar-fill" style="width:'+pct+'%"></div></div></div>'
+      +'<div class="cat-pct" style="font-size:.7rem">'+cp.mastered+'/'+total+'</div>';
+    lCol.appendChild(div);
+  });
+  wrap.appendChild(lCol);
+  catContainer.appendChild(wrap);
+  // Achievements
+  const achGrid=document.getElementById('prog-achs');achGrid.innerHTML='';
+  const achDefs=[
+    {id:'first_win',icon:'🏆',name:'First Win',desc:'Win your first PK battle',check:function(){return state.wins>=1;}},
+    {id:'streak_3',icon:'🔥',name:'Streak 3',desc:'Get a 3x combo in PK',check:function(){return Math.max(pkBSJ,pkBSL)>=3;}},
+    {id:'words_20',icon:'📖',name:'Word Learner',desc:'Learn 20 words',check:function(){return state.wordsLearned.length>=20;}},
+    {id:'words_50',icon:'📚',name:'Bookworm',desc:'Learn 50 words',check:function(){return state.wordsLearned.length>=50;}},
+    {id:'score_500',icon:'⭐',name:'Rising Star',desc:'Earn 500 points',check:function(){return state.totalScore>=500;}},
+    {id:'score_1000',icon:'💎',name:'Champion',desc:'Earn 1000 points',check:function(){return state.totalScore>=1000;}},
+    {id:'perfect_pk',icon:'🌟',name:'Perfect Game',desc:'Get 10/10 correct in a PK',check:function(){return false;}},
+    {id:'explorer',icon:'🗺️',name:'Explorer',desc:'Try all categories',check:function(){var frAll=Object.keys(DATA.fr.categories).every(function(k){return(state.catProgress['fr_'+DATA.fr.categories[k].name]||{}).seen>0;});var zhAll=Object.keys(DATA.zh.categories).every(function(k){return(state.catProgress['zh_'+DATA.zh.categories[k].name]||{}).seen>0;});return frAll||zhAll;}}
+  ];
+  achDefs.forEach(function(a){
+    var unlocked=a.check();
+    var div=document.createElement('div');div.className='achievement'+(unlocked?' unlocked':' locked');
+    div.innerHTML='<div class="ach-icon">'+a.icon+'</div><div class="ach-name">'+a.name+'</div><div class="ach-desc">'+a.desc+'</div>';
+    achGrid.appendChild(div);
+    if(unlocked&&!state.achievements[a.id]){state.achievements[a.id]=true;}
+  });
+  saveState();
+}
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded',function(){
+  console.log('LinguaPK loaded!');
+  loadState();
+  initHome();
+  if(window.speechSynthesis){
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices();};
+  }
+  if(state.profile){
+    selectProfile(state.profile);
+    initUI();
+    showScreen('menu');
+  }
+});
+</script>
+</body>
+</html>
