@@ -91,6 +91,30 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 .lang-badge.fr{background:#E5F0FF;color:#0066CC}.lang-badge.zh{background:#FFE5E5;color:#CC0000}
 .nav-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:transparent;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--muted)}
 
+/* LOGIN SCREEN */
+#screen-login{background:linear-gradient(160deg,#1a1535,#2d2060);align-items:center;justify-content:center;text-align:center;padding:40px 20px;color:#fff;min-height:100vh}
+.login-inner{max-width:380px;width:100%}
+.login-logo{font-size:2.8rem;display:block;margin-bottom:12px}
+.login-inner h2{font-size:1.8rem;font-weight:900;margin-bottom:8px}
+.login-sub{font-size:.9rem;opacity:.7;margin-bottom:32px}
+.login-form{background:rgba(255,255,255,.08);backdrop-filter:blur(12px);border-radius:var(--r);padding:28px 24px;border:1px solid rgba(255,255,255,.12)}
+.login-field{margin-bottom:16px;text-align:left}
+.login-field label{display:block;font-size:.78rem;font-weight:700;margin-bottom:6px;opacity:.8;letter-spacing:.04em;text-transform:uppercase}
+.login-field input{
+  width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);
+  background:rgba(0,0,0,.25);color:#fff;font-size:1rem;outline:none;transition:border-color .2s
+}
+.login-field input:focus{border-color:var(--p)}
+.login-field input::placeholder{color:rgba(255,255,255,.3)}
+.login-btn{
+  width:100%;padding:14px;border-radius:28px;border:none;font-size:1.05rem;font-weight:800;
+  cursor:pointer;background:linear-gradient(135deg,var(--p),var(--s));color:#fff;
+  transition:all .25s;margin-top:8px
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,99,255,.4)}
+.login-err{color:#ff6b6b;font-size:.82rem;margin-top:12px;min-height:20px}
+.login-hint{font-size:.72rem;opacity:.4;margin-top:20px;line-height:1.5}
+
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;padding:8px 0 env(safe-area-inset-bottom,8px);z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.06)}
 .bottom-nav.hidden{display:none}
@@ -315,6 +339,28 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 <body>
 <div class="app" id="app">
 
+<!-- LOGIN SCREEN -->
+<div class="screen active" id="screen-login">
+  <div class="login-inner">
+    <span class="login-logo">🥊 LinguaPK</span>
+    <h2>Welcome back!</h2>
+    <p class="login-sub">Login to continue your language journey</p>
+    <div class="login-form">
+      <div class="login-field">
+        <label>Username</label>
+        <input type="text" id="login-user" placeholder="jiani or leo" autocomplete="username">
+      </div>
+      <div class="login-field">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="·····" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="login-btn" onclick="doLogin()">Login 🔐</button>
+      <div class="login-err" id="login-err"></div>
+    </div>
+    <div class="login-hint">LinguaPK · Jiani & Léo</div>
+  </div>
+</div>
+
 <!-- NAVBAR -->
 <nav class="navbar" id="navbar" style="display:none">
   <div class="navbar-brand" onclick="goHome()">🥊 LinguaPK</div>
@@ -328,7 +374,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
 <div class="toast-container" id="toast-container"></div>
 
 <!-- ========== HOME ========== -->
-<div class="screen active" id="screen-home">
+<div class="screen" id="screen-home">
   <div class="home-inner">
     <div class="hero"><span class="hero-logo">🥊</span><h1>LinguaPK</h1><p>Learn a new language together.<br>Pick your profile to start!</p></div>
     <div class="profile-grid">
@@ -782,6 +828,43 @@ function showScreen(name){
 }
 function goHome(){showScreen('menu');}
 
+// ==================== LOGIN ====================
+// Obfuscated credentials — edit _lp values to change passwords
+// Encode new password: open console → btoa(unescape(encodeURIComponent("mypassword")))
+const _lp = {
+  'jiani': 'amlhbmtyMDI0',   // base64: jiani2024
+  'leo':   'bGVvMjAyNA=='    // base64: leo2024
+};
+function _ck(){
+  try{return localStorage.getItem('lpk_s')==='1';}catch(e){return false;}
+}
+function doLogin(){
+  var u=(document.getElementById('login-user').value||'').trim().toLowerCase();
+  var p=(document.getElementById('login-pass').value||'');
+  var e=document.getElementById('login-err');
+  if(!u||!p){e.textContent='Please enter both fields';return;}
+  var pe;
+  try{pe=btoa(unescape(encodeURIComponent(p)));}catch(x){pe='';}
+  if(_lp[u]&&_lp[u]===pe){
+    localStorage.setItem('lpk_s','1');
+    localStorage.setItem('lpk_u',u);
+    e.textContent='';
+    document.getElementById('login-user').value='';
+    document.getElementById('login-pass').value='';
+    showScreen('home');
+  } else {
+    e.textContent='Invalid username or password';
+  }
+}
+function doLogout(){
+  localStorage.removeItem('lpk_s');
+  localStorage.removeItem('lpk_u');
+  state.profile=null;saveState();
+  document.getElementById('navbar').style.display='none';
+  document.getElementById('bottom-nav').classList.add('hidden');
+  showScreen('login');
+}
+
 // ==================== HOME ====================
 function initHome(){
   const ej=document.getElementById('home-avatar-jiani'),el=document.getElementById('home-avatar-leo');
@@ -798,11 +881,13 @@ function startApp(){
 }
 function logout(){
   state.profile=null;saveState();
+  localStorage.removeItem('lpk_s');
+  localStorage.removeItem('lpk_u');
   document.getElementById('navbar').style.display='none';
   document.getElementById('bottom-nav').classList.add('hidden');
   document.getElementById('profile-jiani').classList.remove('selected');
   document.getElementById('profile-leo').classList.remove('selected');
-  showScreen('home');
+  showScreen('login');
 }
 function initUI(){
   const p=PROFILES[state.profile];if(!p)return;
@@ -1314,10 +1399,17 @@ document.addEventListener('DOMContentLoaded',function(){
     window.speechSynthesis.getVoices();
     window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices();};
   }
-  if(state.profile){
-    selectProfile(state.profile);
-    initUI();
-    showScreen('menu');
+  if(_ck()){
+    // logged in - resume normal flow
+    if(state.profile){
+      selectProfile(state.profile);
+      initUI();
+      showScreen('menu');
+    } else {
+      showScreen('home');
+    }
+  } else {
+    showScreen('login');
   }
 });
 </script>
