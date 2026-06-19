@@ -583,6 +583,50 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
   <button class="nav-item" id="nav-practice" onclick="showScreen('practice')"><span class="nav-icon">🃏</span>Cards</button>
   <button class="nav-item" id="nav-vocab" onclick="showScreen('vocab')"><span class="nav-icon">📖</span>Vocab</button>
   <button class="nav-item" id="nav-progress" onclick="showScreen('progress')"><span class="nav-icon">📊</span>Progress</button>
+  <button class="nav-item" id="nav-settings" onclick="showScreen('settings')"><span class="nav-icon">⚙️</span>Settings</button>
+</div>
+
+<!-- SETTINGS SCREEN -->
+<div class="screen" id="screen-settings">
+  <div class="practice-header"><h2>⚙️ Settings</h2></div>
+  <div style="padding:16px;max-width:480px;margin:0 auto">
+
+    <!-- Daily new words -->
+    <div class="card" style="margin-bottom:16px;padding:20px">
+      <h3 style="margin:0 0 6px;font-size:1rem">🆕 New Words Per Day</h3>
+      <p style="font-size:.82rem;color:var(--muted);margin:0 0 16px">How many new words to introduce each day during Flashcard practice.</p>
+      <div style="display:flex;align-items:center;gap:14px">
+        <input type="range" id="setting-new-limit" min="3" max="30" step="1" value="10"
+          oninput="document.getElementById('new-limit-val').textContent=this.value"
+          style="flex:1;accent-color:var(--primary)">
+        <span id="new-limit-val" style="font-size:1.4rem;font-weight:800;color:var(--primary);min-width:32px;text-align:center">10</span>
+        <span style="font-size:.82rem;color:var(--muted)">words</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);margin-top:4px">
+        <span>3 (easy)</span><span>15 (standard)</span><span>30 (intensive)</span>
+      </div>
+    </div>
+
+    <!-- Passwords -->
+    <div class="card" style="margin-bottom:16px;padding:20px">
+      <h3 style="margin:0 0 6px;font-size:1rem">🔑 Change Passwords</h3>
+      <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">Update login passwords for Jiani or Léo.</p>
+      <div style="margin-bottom:10px">
+        <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">Jiani's new password</label>
+        <input type="password" id="setting-pw-jiani" placeholder="Leave blank to keep current"
+          style="width:100%;box-sizing:border-box;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:.9rem">
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:.82rem;font-weight:600;display:block;margin-bottom:4px">Léo's new password</label>
+        <input type="password" id="setting-pw-leo" placeholder="Leave blank to keep current"
+          style="width:100%;box-sizing:border-box;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:.9rem">
+      </div>
+      <div id="setting-pw-msg" style="font-size:.82rem;min-height:20px"></div>
+    </div>
+
+    <button class="btn" onclick="saveSettings()" style="width:100%;margin-bottom:8px">💾 Save Settings</button>
+    <button class="btn btn-secondary" onclick="showScreen('menu')" style="width:100%;background:var(--bg);color:var(--text)">← Back</button>
+  </div>
 </div>
 
 <div id="spc"></div><!-- score popup container -->
@@ -798,7 +842,7 @@ const DATA = {
 
 // ==================== STATE ====================
 // wordSRS: { [wordId]: { interval:1, due:'2026-06-19', ease:2.5, reps:0 } }
-let state={profile:null,totalScore:0,wins:0,streak:0,wordsLearned:[],catProgress:{},achievements:{},firstLearnDate:null,dailyProgress:{},wordSRS:{}};
+let state={profile:null,totalScore:0,wins:0,streak:0,wordsLearned:[],catProgress:{},achievements:{},firstLearnDate:null,dailyProgress:{},wordSRS:{},dailyNewLimit:10};
 // PK state
 let pkQs=[],pkQi=0,pkJ=0,pkL=0,pkSJ=0,pkSL=0,pkBSJ=0,pkBSL=0,pkCJ=0,pkCL=0,
    pkTurn='jiani',pkTimer=null,pkTimeLeft=15,pkAnswered=false,pkStartT=0;
@@ -808,8 +852,33 @@ let fcCards=[],fcIdx=0,fcFlipped=false;
 let pronRec=null,pronRecFlag=false,pronCur=null;
 
 // ==================== STORAGE ====================
-function loadState(){try{const s=JSON.parse(localStorage.getItem('lpk_v2')||'{}');state.profile=s.profile||null;state.totalScore=s.totalScore||0;state.wins=s.wins||0;state.streak=s.streak||0;state.wordsLearned=s.wordsLearned||[];state.catProgress=s.catProgress||{};state.achievements=s.achievements||{};state.firstLearnDate=s.firstLearnDate||null;state.dailyProgress=s.dailyProgress||{};state.wordSRS=s.wordSRS||{};}catch(e){}}
+function loadState(){try{const s=JSON.parse(localStorage.getItem('lpk_v2')||'{}');state.profile=s.profile||null;state.totalScore=s.totalScore||0;state.wins=s.wins||0;state.streak=s.streak||0;state.wordsLearned=s.wordsLearned||[];state.catProgress=s.catProgress||{};state.achievements=s.achievements||{};state.firstLearnDate=s.firstLearnDate||null;state.dailyProgress=s.dailyProgress||{};state.wordSRS=s.wordSRS||{};state.dailyNewLimit=s.dailyNewLimit||10;}catch(e){}}
 function saveState(){try{localStorage.setItem('lpk_v2',JSON.stringify(state));}catch(e){}}
+function renderSettings(){
+  var sl=document.getElementById('setting-new-limit');
+  if(sl){sl.value=state.dailyNewLimit||10;document.getElementById('new-limit-val').textContent=sl.value;}
+  document.getElementById('setting-pw-jiani').value='';
+  document.getElementById('setting-pw-leo').value='';
+  document.getElementById('setting-pw-msg').textContent='';
+}
+function saveSettings(){
+  // Save daily new limit
+  var lmt=parseInt(document.getElementById('setting-new-limit').value)||10;
+  lmt=Math.max(3,Math.min(30,lmt));
+  state.dailyNewLimit=lmt;
+  saveState();
+  // Change passwords if provided
+  var pwJ=document.getElementById('setting-pw-jiani').value.trim();
+  var pwL=document.getElementById('setting-pw-leo').value.trim();
+  var msg=[];
+  if(pwJ){_lp['jiani']=btoa(unescape(encodeURIComponent(pwJ)));msg.push('Jiani\'s password updated');}
+  if(pwL){_lp['leo']=btoa(unescape(encodeURIComponent(pwL)));msg.push('Léo\'s password updated');}
+  var el=document.getElementById('setting-pw-msg');
+  el.style.color='#2E9E57';
+  el.textContent='✅ Saved! '+(msg.length?msg.join(', ')+'.':"Daily limit set to "+lmt+" words.");
+  document.getElementById('setting-pw-jiani').value='';
+  document.getElementById('setting-pw-leo').value='';
+}
 
 // ==================== NAVIGATION ====================
 function showScreen(name){
@@ -820,13 +889,14 @@ function showScreen(name){
   if(name==='home'){nb.style.display='none';bn.classList.add('hidden');}
   else{nb.style.display='flex';bn.classList.remove('hidden');}
   document.querySelectorAll('.nav-item').forEach(function(i){i.classList.remove('active');});
-  const nm={menu:'nav-menu',practice:'nav-practice',vocab:'nav-vocab',progress:'nav-progress'};
+  const nm={menu:'nav-menu',practice:'nav-practice',vocab:'nav-vocab',progress:'nav-progress',settings:'nav-settings'};
   if(nm[name])document.getElementById(nm[name])?.classList.add('active');
   // screen-specific init
   if(name==='vocab')renderVocab();
   if(name==='phrase')renderPhrase();
   if(name==='practice')initPractice();
   if(name==='progress')renderProgress();
+  if(name==='settings')renderSettings();
   if(name==='menu')updateStats();
   window.scrollTo(0,0);
 }
@@ -1126,8 +1196,8 @@ function getSRSQueue(lang){
     if(!srs){newWords.push(w);}
     else if(srs.due<=today){due.push(w);}
   });
-  // Limit new words per day to 10 to avoid overwhelm
-  var newLimit=10;
+  // Limit new words per day — user-configurable
+  var newLimit=state.dailyNewLimit||10;
   shuffle(due);shuffle(newWords);
   var queue=due.concat(newWords.slice(0,newLimit));
   if(queue.length===0){
