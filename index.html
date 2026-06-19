@@ -488,7 +488,10 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Ro
   <div class="practice-container">
     <div class="practice-header">
       <h2>🃏 Flashcards</h2>
-      <div class="practice-counter" id="fc-counter">1 / 0</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="fc-srs-badge" style="font-size:.72rem;padding:2px 8px;border-radius:20px;background:#EEF2FF;color:#6C63FF;font-weight:700"></span>
+        <div class="practice-counter" id="fc-counter">1 / 0</div>
+      </div>
     </div>
     <div class="flashcard-wrap" id="fc-wrap">
       <div class="flashcard" id="fc-card" onclick="flipCard()">
@@ -794,7 +797,8 @@ const DATA = {
 };
 
 // ==================== STATE ====================
-let state={profile:null,totalScore:0,wins:0,streak:0,wordsLearned:[],catProgress:{},achievements:{},firstLearnDate:null,dailyProgress:{}};
+// wordSRS: { [wordId]: { interval:1, due:'2026-06-19', ease:2.5, reps:0 } }
+let state={profile:null,totalScore:0,wins:0,streak:0,wordsLearned:[],catProgress:{},achievements:{},firstLearnDate:null,dailyProgress:{},wordSRS:{}};
 // PK state
 let pkQs=[],pkQi=0,pkJ=0,pkL=0,pkSJ=0,pkSL=0,pkBSJ=0,pkBSL=0,pkCJ=0,pkCL=0,
    pkTurn='jiani',pkTimer=null,pkTimeLeft=15,pkAnswered=false,pkStartT=0;
@@ -804,7 +808,7 @@ let fcCards=[],fcIdx=0,fcFlipped=false;
 let pronRec=null,pronRecFlag=false,pronCur=null;
 
 // ==================== STORAGE ====================
-function loadState(){try{const s=JSON.parse(localStorage.getItem('lpk_v2')||'{}');state.profile=s.profile||null;state.totalScore=s.totalScore||0;state.wins=s.wins||0;state.streak=s.streak||0;state.wordsLearned=s.wordsLearned||[];state.catProgress=s.catProgress||{};state.achievements=s.achievements||{};state.firstLearnDate=s.firstLearnDate||null;state.dailyProgress=s.dailyProgress||{};}catch(e){}}
+function loadState(){try{const s=JSON.parse(localStorage.getItem('lpk_v2')||'{}');state.profile=s.profile||null;state.totalScore=s.totalScore||0;state.wins=s.wins||0;state.streak=s.streak||0;state.wordsLearned=s.wordsLearned||[];state.catProgress=s.catProgress||{};state.achievements=s.achievements||{};state.firstLearnDate=s.firstLearnDate||null;state.dailyProgress=s.dailyProgress||{};state.wordSRS=s.wordSRS||{};}catch(e){}}
 function saveState(){try{localStorage.setItem('lpk_v2',JSON.stringify(state));}catch(e){}}
 
 // ==================== NAVIGATION ====================
@@ -851,7 +855,11 @@ function doLogin(){
     e.textContent='';
     document.getElementById('login-user').value='';
     document.getElementById('login-pass').value='';
-    showScreen('home');
+    // Auto-select profile based on login username
+    selectProfile(u);
+    saveState();
+    initUI();
+    showScreen('menu');
   } else {
     e.textContent='Invalid username or password';
   }
@@ -1100,13 +1108,58 @@ function endBattle(){
 }
 
 // ==================== FLASHCARDS ====================
-function initPractice(){
-  const ld=DATA[PROFILES[state.profile].learnsLang];
-  fcCards=[];
-  Object.values(ld.categories).forEach(function(cat){
-    cat.words.forEach(function(w){fcCards.push({...w,catName:cat.name});});
+// ==================== SRS (Spaced Repetition) ====================
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function addDays(dateStr,n){var d=new Date(dateStr);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function getSRSQueue(lang){
+  // Build full word list with IDs
+  var allWords=[];
+  Object.values(DATA[lang].categories).forEach(function(cat){
+    cat.words.forEach(function(w){
+      allWords.push({...w,catName:cat.name,wId:lang+'_'+cat.name+'_'+w.t});
+    });
   });
-  fcCards=shuffle(fcCards);fcIdx=0;fcFlipped=false;
+  var today=todayStr();
+  var due=[],newWords=[];
+  allWords.forEach(function(w){
+    var srs=state.wordSRS[w.wId];
+    if(!srs){newWords.push(w);}
+    else if(srs.due<=today){due.push(w);}
+  });
+  // Limit new words per day to 10 to avoid overwhelm
+  var newLimit=10;
+  shuffle(due);shuffle(newWords);
+  var queue=due.concat(newWords.slice(0,newLimit));
+  if(queue.length===0){
+    // All done for today — show review of mastered words
+    queue=allWords.filter(function(w){return state.wordSRS[w.wId]&&state.wordSRS[w.wId].reps>0;});
+    shuffle(queue);queue=queue.slice(0,15);
+    queue._allDone=true;
+  }
+  return queue;
+}
+function applySRS(wId,rating){
+  var today=todayStr();
+  var srs=state.wordSRS[wId]||{interval:1,due:today,ease:2.5,reps:0};
+  // SM-2 simplified
+  if(rating==='again'){srs.interval=1;srs.ease=Math.max(1.3,srs.ease-0.2);}
+  else if(rating==='hard'){srs.interval=Math.max(1,Math.floor(srs.interval*1.2));srs.ease=Math.max(1.3,srs.ease-0.15);}
+  else if(rating==='good'){srs.interval=Math.round(srs.interval*srs.ease);srs.ease=srs.ease;}
+  else if(rating==='easy'){srs.interval=Math.round(srs.interval*srs.ease*1.3);srs.ease=srs.ease+0.15;}
+  srs.interval=Math.max(1,Math.min(srs.interval,365));
+  srs.due=addDays(today,srs.interval);
+  srs.reps=(srs.reps||0)+1;
+  state.wordSRS[wId]=srs;
+}
+
+function initPractice(){
+  const lang=PROFILES[state.profile].learnsLang;
+  fcCards=getSRSQueue(lang);
+  fcIdx=0;fcFlipped=false;
+  // Show banner if all words done for today
+  if(fcCards._allDone){
+    showToast('🎉 All new cards reviewed! Here\'s a quick refresher.','success');
+  }
   showFcCard();
 }
 function showFcCard(){
@@ -1123,6 +1176,12 @@ function showFcCard(){
   document.getElementById('fc-b-word').textContent=c.e;
   document.getElementById('fc-b-mean').textContent=c.t;
   document.getElementById('fc-b-ex').textContent=c.ex||'';
+  // SRS status badge
+  var wId=(PROFILES[state.profile].learnsLang)+'_'+c.catName+'_'+c.t;
+  var srs=state.wordSRS[wId];
+  var badge=srs?'🔄 Review (due today)':(document.getElementById('fc-srs-badge')&&'✨ New word');
+  var badgeEl=document.getElementById('fc-srs-badge');
+  if(badgeEl)badgeEl.textContent=srs?'🔄 Review':'✨ New';
   document.getElementById('fc-counter').textContent=(fcIdx+1)+' / '+fcCards.length;
   const pct=((fcIdx)/fcCards.length)*100;
   document.getElementById('fc-progress').style.width=pct+'%';
@@ -1134,15 +1193,32 @@ function flipCard(){
 }
 function rateCard(rating){
   if(fcIdx>=fcCards.length)return;
-  if(!state.firstLearnDate){state.firstLearnDate=new Date().toISOString().slice(0,10);}
+  if(!state.firstLearnDate){state.firstLearnDate=todayStr();}
   const c=fcCards[fcIdx];
-  const catKey=(PROFILES[state.profile].learnsLang)+'_'+c.catName;
+  const lang=PROFILES[state.profile].learnsLang;
+  const catKey=lang+'_'+c.catName;
+  const wId=lang+'_'+c.catName+'_'+c.t;
   if(!state.catProgress[catKey])state.catProgress[catKey]={seen:0,mastered:0};
   state.catProgress[catKey].seen++;
-  if(rating==='good'||rating==='easy'){state.catProgress[catKey].mastered++;
-  if(!state.dailyProgress)state.dailyProgress={};var td=new Date().toISOString().slice(0,10);if(!state.dailyProgress[td])state.dailyProgress[td]={};state.dailyProgress[td][catKey]=(state.dailyProgress[td][catKey]||0)+1;}
-  saveState();
-  fcIdx++;showFcCard();
+  if(rating==='good'||rating==='easy'){
+    state.catProgress[catKey].mastered++;
+    if(!state.wordsLearned.includes(wId)){state.wordsLearned.push(wId);}
+    var td=todayStr();
+    if(!state.dailyProgress)state.dailyProgress={};
+    if(!state.dailyProgress[td])state.dailyProgress[td]={};
+    state.dailyProgress[td][catKey]=(state.dailyProgress[td][catKey]||0)+1;
+  }
+  // Apply spaced repetition
+  applySRS(wId,rating);
+  // If 'again', put card back at end of queue
+  if(rating==='again'){
+    var card=fcCards[fcIdx];
+    fcCards.splice(fcIdx,1);
+    fcCards.push(card);
+  } else {
+    fcIdx++;
+  }
+  saveState();showFcCard();
 }
 
 // ==================== VOCABULARY ====================
@@ -1400,7 +1476,11 @@ document.addEventListener('DOMContentLoaded',function(){
     window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices();};
   }
   if(_ck()){
-    // logged in - resume normal flow
+    // logged in - restore profile from login username
+    var storedUser=localStorage.getItem('lpk_u');
+    if(!state.profile&&storedUser){
+      state.profile=storedUser;
+    }
     if(state.profile){
       selectProfile(state.profile);
       initUI();
